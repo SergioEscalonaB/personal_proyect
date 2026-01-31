@@ -1,0 +1,14 @@
+pyodbc>=4.0.39
+# Requirements Documentation
+
+This project requires the Microsoft Access Database Engine (ODBC) driver to be installed on the system. This is necessary for establishing connections to Microsoft Access databases (.mdb, .accdb files) through ODBC connections in Python applications.
+
+## Installation
+
+The Microsoft Access Database Engine can be downloaded from the Microsoft website. Choose the appropriate version (32-bit or 64-bit) that matches your Python installation and system architecture.
+
+## Dependencies
+
+- Python ODBC library (pyodbc) - for ODBC connection handling
+- Microsoft Access Database Engine - system-level dependency
+Microsoft Access Database Engine (ODBC) 

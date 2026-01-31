@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model CAN {
+  COB_CODIGO String?
+  CAN        String?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model CLIENTES {
+  CLI_CODIGO String?
+  CLI_NOMBRE String?
+  CLI_CALLE  String?
+  CLI_BARRIO String?
+  COB_CODIGO String?
+  CLI_CIUDAD String?
+  ESTADO     String?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model COBRO {
+  COB_CODIGO    String?
+  COB_NOMBRE    String?
+  COB_DIRECCION String?
+  COB_MOTO      String?
+  COB_TELEFONO  String?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model DESCRIPCION {
+  TAR_CODIGO String?
+  DES_FECHA  String?
+  DES_ABONO  String?
+  DES_RESTA  String?
+  FECHA_ACT  String?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model FIADOR {
+  CEDULA     String?
+  NOMBRE     String?
+  DIR        String?
+  TEL        String?
+  CLI_CODIGO String?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model LISTADO {
+  codcob   String?
+  fecha    String?
+  cobro    String?
+  prestamo String?
+  utilidad String?
+  gastos   String?
+  efectivo String?
+  base     String?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model MANA {
+  COB_CODIGO String?
+  DIA        String?
+  PRESTAMO   String?
+  DESC       String?
+  ABONO      String?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model PRES {
+  COB_CODIGO String?
+  PRES       String?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model TARGETA {
+  TAR_CODIGO String?
+  TAR_VALOR  String?
+  TAR_CUOTA  String?
+  TAR_FECHA  String?
+  CLI_CODIGO String?
+  ITEN       String?
+  ESTADO     String?
+  CLAVO      String?
+  PRES       String?
+  TIEMPO     String?
+  FP         String?
+  INT        String?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model US {
+  USUARIO String?
+  CLAVE   String?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model US2 {
+  USUARIO String?
+  CLAVE   String?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model VALOR {
+  Fecha String?
+  Valor String?
+  cobro String?
+
+  @@ignore
+}

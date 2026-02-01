@@ -1,0 +1,1 @@
+sql -> controller -> routes -> app (1 ves)

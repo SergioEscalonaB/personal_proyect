@@ -18,7 +18,14 @@ export const getCobroSQL = () => {
 };
 
 /*
-//Crear un nuevo cobro
+// Obtener todos los registros de la tabla COBRO metodo prisma normal
+export const getCobroPrisma = async () => {
+  return prisma.cOBRO.findMany();
+};
+*/
+
+/*
+//Crear un nuevo cobro metodo sql
 export const createCobroSQL = (cobro: Cobro) => {
   return prisma.$queryRaw<COBRO[]>`
     INSERT INTO COBRO (COB_CODIGO, COB_NOMBRE, COB_DIRECCION, COB_MOTO, COB_TELEFONO)

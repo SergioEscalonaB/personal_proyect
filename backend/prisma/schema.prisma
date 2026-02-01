@@ -16,15 +16,13 @@ model CAN {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model CLIENTES {
-  CLI_CODIGO String?
+  CLI_CODIGO String @id
   CLI_NOMBRE String?
   CLI_CALLE  String?
   CLI_BARRIO String?
   COB_CODIGO String?
   CLI_CIUDAD String?
   ESTADO     String?
-
-  @@ignore
 }
 
 model COBRO {

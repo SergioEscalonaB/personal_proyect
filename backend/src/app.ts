@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cobroRoutes from "./routes/cobro.routes";
+import clienteRoutes from "./routes/cliente.routes";
 
 // Crear la aplicación Express
 const app = express();
@@ -14,7 +15,10 @@ app.get("/", (req: express.Request, res: express.Response) => {
 });
 
 // Usar las rutas de cobro
-app.use("/cobro", cobroRoutes);
+app.use("/cobros", cobroRoutes);
+
+// Usar la ruta de clientes
+app.use("/clientes", clienteRoutes);
 
 // Exportar la aplicación
 export default app;

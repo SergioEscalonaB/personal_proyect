@@ -27,15 +27,12 @@ model CLIENTES {
   @@ignore
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model COBRO {
-  COB_CODIGO    String?
+  COB_CODIGO    String  @id
   COB_NOMBRE    String?
   COB_DIRECCION String?
   COB_MOTO      String?
   COB_TELEFONO  String?
-
-  @@ignore
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.

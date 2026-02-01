@@ -9,4 +9,4 @@ router.get("/", getCobros);
 router.post("/", createCobro);
 
 // Exportar el router
-module.exports = router;
+export default router;

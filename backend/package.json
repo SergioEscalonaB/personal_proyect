@@ -5,9 +5,9 @@
   "license": "MIT",
   "author": "Sergio Escalona",
   "type": "commonjs",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
-    "start": "nodemon src/server.js",
+    "start": "nodemon src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -21,9 +21,12 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
-    "@types/node": "^25.1.0",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.2.0",
     "@types/pg": "^8.16.0",
     "nodemon": "^3.1.11",
-    "prisma": "^7.3.0"
+    "prisma": "^7.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

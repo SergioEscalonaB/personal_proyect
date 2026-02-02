@@ -90,7 +90,7 @@ model PRES {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model TARGETA {
-  TAR_CODIGO String?
+  TAR_CODIGO String @id
   TAR_VALOR  String?
   TAR_CUOTA  String?
   TAR_FECHA  String?
@@ -102,8 +102,6 @@ model TARGETA {
   TIEMPO     String?
   FP         String?
   INT        String?
-
-  @@ignore
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.

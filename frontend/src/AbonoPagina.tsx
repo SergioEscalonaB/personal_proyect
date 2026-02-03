@@ -1,8 +1,11 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
+import { AbonoProvider } from './pages/abono/AbonoContext.tsx'
 import Selector from './pages/abono/Usuario.tsx'
+import Botones from './pages/abono/botones.tsx'
 
 function AbonoPage() {
   return (
+    <AbonoProvider>
     <div className="container-fluid px-3 py-2">
 
       {/* FILA 1 */}
@@ -31,7 +34,7 @@ function AbonoPage() {
           5
         </div>
         <div className="col-5 border p-3 text-center" style={{ height: '20vh' }}>
-          6
+          <Botones />
         </div>
         <div className="col-3 border p-3 text-center" style={{ height: '20vh' }}>
           7
@@ -42,6 +45,7 @@ function AbonoPage() {
       </div>
 
     </div>
+    </AbonoProvider>
   )
 }
 

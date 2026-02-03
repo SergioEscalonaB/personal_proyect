@@ -54,7 +54,8 @@ WHERE T.ESTADO = 'ACTIVA'
 ORDER BY CAST(T.ITEN AS SIGNED);
 
 -- ESTA ES LA FUNCION PARA MANERAR LA NEVEGACION
-LIMIT 1 OFFSET 0; --primero (aca es donde manejamos LA NAVEGACION)
+LIMIT 1 OFFSET 0; 
+--primero (aca es donde manejamos LA NAVEGACION)
 
 -----------------------------------------
 CONTAR CUANTAS TARJETAS (clientes) HAY EN CADA COBRO

@@ -1,7 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { AbonoProvider } from './pages/abono/AbonoContext.tsx'
 import Selector from './pages/abono/Usuario.tsx'
-import Botones from './pages/abono/botones.tsx'
+import Botones from './pages/abono/Botones.tsx'
 
 function AbonoPage() {
   return (

@@ -11,11 +11,11 @@ export async function getRutas(): Promise<Cobro[]> {
   return json.data;
 }
 
-// Obtener todos los clientes para contar
+// Obtener el conteo de todos los clientes
 export async function getTotalTarjetas(cob_codigo: string): Promise<number> {
   const res = await fetch(`${API_URL}/abonopage/${cob_codigo}/total-tarjetas`);
   if (!res.ok) {
-    throw new Error(`Error obteniendo los clientes: ${res.statusText}`);
+    throw new Error(`Error obteniendo el conteo de tarjetas: ${res.statusText}`);
   }
   const json = await res.json();
   return json.data[0].total;

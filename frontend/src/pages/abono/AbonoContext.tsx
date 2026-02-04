@@ -84,6 +84,9 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+
+  // Agregar lo de la descripcion 
+  
   return (
     <AbonoContext.Provider
       value={{

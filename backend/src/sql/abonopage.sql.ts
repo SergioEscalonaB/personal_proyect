@@ -61,7 +61,7 @@ LEFT JOIN (
 ) D ON T.TAR_CODIGO = D.TAR_CODIGO
 
 WHERE T.ESTADO = 'ACTIVA'
-  AND C.COB_CODIGO = 'Yayo'
+  AND C.COB_CODIGO = ${cobroCodigo}
   -- esta línea permite tarjetas nuevas SIN descripción
   AND (D.TAR_CODIGO IS NOT NULL OR NOT EXISTS (
         SELECT 1 
@@ -74,7 +74,7 @@ WHERE T.ESTADO = 'ACTIVA'
 // Navegar entre tarjetas con saldo
 export const getTarjetaNavegacionSQL = (
   cobroCodigo: string,
-  offset: number
+  offset: number,
 ) => {
   return prisma.$queryRaw<CLIENTES[]>`
     SELECT *
@@ -111,4 +111,25 @@ export const getTarjetaNavegacionSQL = (
     ORDER BY CAST(T.ITEN AS SIGNED)
     LIMIT 1 OFFSET ${offset};
   `;
+};
+
+// Obtener la descripcion de una tarjeta especifica
+export const getDescripcionTarjetaSQL = (tarcodigo: string) => {
+  return prisma.$queryRaw<any[]>`
+        SELECT 
+      C.CLI_CODIGO, 
+      C.CLI_NOMBRE, 
+      T.TAR_CODIGO, 
+      T.TAR_FECHA, 
+      T.TAR_VALOR,
+      D.FECHA_ACT, 
+      D.DES_FECHA, 
+      D.DES_ABONO, 
+      D.DES_RESTA 
+    FROM DESCRIPCION D
+    INNER JOIN TARGETA T ON D.TAR_CODIGO = T.TAR_CODIGO
+    INNER JOIN CLIENTES C ON T.CLI_CODIGO = C.CLI_CODIGO
+    WHERE D.TAR_CODIGO = ${tarcodigo}
+    ORDER BY C.CLI_CODIGO, TAR_FECHA, CAST(DES_RESTA AS SIGNED) DESC;
+    `;
 };

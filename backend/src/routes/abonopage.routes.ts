@@ -1,5 +1,11 @@
-import express from 'express';
-import { getCobros, getclientesPorCobro, getTarjetasConSaldo, navegarTarjetasConSaldo } from '../controllers/abonopage.controller';  
+import express from "express";
+import {
+  getCobros,
+  getclientesPorCobro,
+  getTarjetasConSaldo,
+  navegarTarjetasConSaldo,
+  getDescripcionTarjeta,
+} from "../controllers/abonopage.controller";
 
 const router = express.Router();
 
@@ -7,14 +13,15 @@ const router = express.Router();
 router.get('/cobros', getCobros);
 
 // Obtener todos los clientes de un cobro especifico
-router.get('/:cobroCodigo/clientes', getclientesPorCobro);
+router.get("/:cobroCodigo/clientes", getclientesPorCobro);
 
 // Obtener total tarjetas con saldo
-router.get('/:cobroCodigo/total-tarjetas', getTarjetasConSaldo);
+router.get("/:cobroCodigo/total-tarjetas", getTarjetasConSaldo);
 
 // Navegar entre tarjetas con saldo
-router.get('/:cobroCodigo/tarjeta/navegar/:offset', navegarTarjetasConSaldo);
+router.get("/:cobroCodigo/tarjeta/navegar/:offset", navegarTarjetasConSaldo);
+
+// Obtener la descripcion de una tarjeta especifica
+router.get("/tarjeta/:tarcodigo/descripcion", getDescripcionTarjeta);
 
 export default router;
-
-

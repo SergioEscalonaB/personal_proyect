@@ -1,17 +1,24 @@
 // context/AbonoContext.tsx
 import { createContext, useContext, useState, useEffect } from "react";
-import { getRutas, getTarjetasconSaldo, getTotalTarjetas } from "../../services/abonopag";
+import {
+  getDescripcionTarjeta,
+  getRutas,
+  getTarjetasconSaldo,
+  getTotalTarjetas,} from "../../services/abonopag";
 import type { Cobro } from "../../types/cobro";
 import type { TarjetaConSaldo } from "../../types/tarjetaconsaldo";
+import type { DescripcionTarjeta } from "../../types/descripciontarjeta";
 
 type AbonoContextType = {
   rutas: Cobro[];
   cobroSeleccionado: Cobro | null;
   cliente: TarjetaConSaldo | null;
   offset: number;
+  descripcion: DescripcionTarjeta[];
   setCobroSeleccionado: (c: Cobro) => void;
   siguiente: () => void;
   anterior: () => void;
+  primero: () => void;
   ultimo: () => void;
   ConteoTarjetas?: () => void;
 };
@@ -19,7 +26,6 @@ type AbonoContextType = {
 const AbonoContext = createContext<AbonoContextType | null>(null);
 
 export function AbonoProvider({ children }: { children: React.ReactNode }) {
-  
   // Obtener las rutas de cobro
   const [rutas, setRutas] = useState<Cobro[]>([]);
   useEffect(() => {
@@ -35,7 +41,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
       cargarTarjeta(cobroSeleccionado.COB_CODIGO, 0);
     }
   }, [cobroSeleccionado]);
-  
+
   // Estado para la navegacion de tarjetas
   const [offset, setOffset] = useState(0);
   const [cliente, setCliente] = useState<TarjetaConSaldo | null>(null);
@@ -58,7 +64,9 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const ConteoTarjetas = async () => {
       if (cobroSeleccionado) {
-        const totalTarjetas = await getTotalTarjetas(cobroSeleccionado.COB_CODIGO);
+        const totalTarjetas = await getTotalTarjetas(
+          cobroSeleccionado.COB_CODIGO,
+        );
         setTotal(totalTarjetas);
       }
     };
@@ -78,15 +86,32 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const primero = () => {
+    if (cobroSeleccionado) {
+      cargarTarjeta(cobroSeleccionado.COB_CODIGO, 0);
+    }
+  };
+
   const ultimo = () => {
     if (cobroSeleccionado) {
       cargarTarjeta(cobroSeleccionado.COB_CODIGO, total - 1);
     }
   };
 
+  // Mostrar descripcion de la tarjeta del cliente
+  const [descripcion, setDescripcion] = useState<DescripcionTarjeta[]>([]);
+  useEffect(() => {
+    const cargarDescripcion = async () => {
+      if (cliente?.TAR_CODIGO) {
+        const desc = await getDescripcionTarjeta(cliente.TAR_CODIGO);
+        setDescripcion(desc);
+      } else {
+        setDescripcion([]);
+      }
+    };
+    cargarDescripcion();
+  }, [cliente]);
 
-  // Agregar lo de la descripcion 
-  
   return (
     <AbonoContext.Provider
       value={{
@@ -97,7 +122,9 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         setCobroSeleccionado,
         siguiente,
         anterior,
-        ultimo
+        primero,
+        ultimo,
+        descripcion,
       }}
     >
       {children}

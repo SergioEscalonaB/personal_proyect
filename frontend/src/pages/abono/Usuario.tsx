@@ -67,6 +67,7 @@ function Selector() {
           <div className="fs-5 fw-bold">{cliente?.TAR_FECHA ?? "-"}</div>
 
           <div className="fs-5">Saldo:</div>
+          <div className="fs-5 fw-bold">{cliente?.TAR_CODIGO ?? "-"}</div>
         </div>
       </div>
     </div>

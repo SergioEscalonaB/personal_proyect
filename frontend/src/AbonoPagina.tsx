@@ -2,6 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import { AbonoProvider } from './pages/abono/AbonoContext.tsx'
 import Selector from './pages/abono/Usuario.tsx'
 import Botones from './pages/abono/Botones.tsx'
+import Descripcion from './pages/abono/Descripcion.tsx'
 
 function AbonoPage() {
   return (
@@ -21,7 +22,7 @@ function AbonoPage() {
           2
         </div>
         <div className="col-5 border p-3 text-center" style={{ height: '50vh' }}>
-          3
+          <Descripcion />
         </div>
         <div className="col-5 border p-3 text-center" style={{ height: '50vh' }}>
           4

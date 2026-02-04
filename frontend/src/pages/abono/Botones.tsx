@@ -6,6 +6,7 @@ function Botones() {
     cliente,
     anterior,
     siguiente,
+    primero,
     ultimo,
     cobroSeleccionado,
   } = useAbono();
@@ -35,6 +36,13 @@ function Botones() {
           Siguiente →
         </button>
       </div>
+      <button
+        className="btn btn-outline-primary btn-sm"
+        onClick={primero}
+        disabled={!cliente}
+      >
+        Primero
+      </button>
 
       <button
         className="btn btn-outline-primary btn-sm"

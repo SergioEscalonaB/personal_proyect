@@ -32,3 +32,13 @@ export async function getTarjetasconSaldo(
     const json = await res.json();
     return json.data;
 }
+
+// Mostrar la descripcion de la tarjeta del cliente
+export async function getDescripcionTarjeta(tarcodigo: string): Promise<any> {
+  const res = await fetch(`${API_URL}/abonopage/tarjeta/${tarcodigo}/descripcion`);
+  if (!res.ok) {
+    throw new Error(`Error obteniendo la descripcion de la tarjeta: ${res.statusText}`);
+  }
+  const json = await res.json();
+  return json.data;
+}

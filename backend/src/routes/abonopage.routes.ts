@@ -6,6 +6,7 @@ import {
   navegarTarjetasConSaldo,
   getDescripcionTarjeta,
   getSaldoRestante,
+  crearClienteNuevo,
 } from "../controllers/abonopage.controller";
 
 const router = express.Router();
@@ -27,5 +28,8 @@ router.get("/tarjeta/:tarcodigo/descripcion", getDescripcionTarjeta);
 
 // Obtener el saldo restante de una tarjeta
 router.get("/tarjeta/:tarcodigo/saldo-restante", getSaldoRestante);
+
+// Crear un nuevo cliente con tarjeta, desplazando las tarjetas existentes (ordenado por ITEN)
+router.post("/cliente/nuevo", crearClienteNuevo);
 
 export default router;

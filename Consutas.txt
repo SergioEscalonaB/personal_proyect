@@ -22,7 +22,7 @@ OBTENIDENDO TARJETAS QUE NO ESTAN EN 0
 ESTAN SON LAS QUE SE MUESTRAN EN EL COBRO PARA PODERLE HACER LOS ABONOS
 (LAS 81 tarjetas, es largo porque si la tarjeta es nueva no tiene descripción)
 
-SELECT *
+SELECT C.CLI_CODIGO, C.CLI_NOMBRE, C.CLI_CALLE, C.COB_CODIGO, C.ESTADO, T.TAR_CODIGO, T.TAR_VALOR, T.TAR_CUOTA, T.TAR_FECHA, T.ITEN, T.ESTADO, T.TIEMPO, T.FP
 FROM CLIENTES C
 INNER JOIN TARGETA T
     ON C.CLI_CODIGO = T.CLI_CODIGO
@@ -139,7 +139,7 @@ OFFSET (
 AUMENTAMOS 1 A LOS ITEN - con esto podemos ya modificar lo del orden de las tarjetas, el iten
 
 UPDATE TARGETA 
-SET ITEN = ITEN - 1
+SET ITEN = ITEN - 1 -- aumento
 WHERE TAR_CODIGO IN (
     SELECT T.TAR_CODIGO
     FROM TARGETA T
@@ -256,5 +256,35 @@ WHERE TAR_CODIGO IN (SELECT TAR_CODIGO FROM temp_iten);
 DROP TABLE temp_iten;
 
 ---------------------------------------------
+NUEVO CLIENTE CON TARJETA
 
+-- 1. Insertar el cliente
+INSERT INTO CLIENTES (CLI_CODIGO, CLI_NOMBRE, CLI_CALLE, COB_CODIGO, ESTADO)
+VALUES ('1010', 'Sergio Prueba', '315226', 'Yayo', 'ACTIVO');
 
+-- 2. Insertar la tarjeta con el siguiente número
+INSERT INTO TARGETA (TAR_CODIGO, CLI_CODIGO, TAR_VALOR, TAR_CUOTA, TAR_FECHA, ITEN, ESTADO, TIEMPO, FP)
+SELECT 
+    'Yayo' || (COALESCE(MAX(CAST(SUBSTR(TAR_CODIGO, LENGTH('Yayo') + 1) AS INTEGER)), 0) + 1), --Buscar ultimo tar_codigo
+    '1010', -- Cli_codigo
+    '500000', -- Tar_valor
+    '50000', -- Tar_cuota
+    '04-02-26', --Tar_fecha
+    '5', --Iten
+    'ACTIVA', --Estado
+    '30', --Tiempo
+    'S' --FP
+FROM TARGETA 
+WHERE TAR_CODIGO LIKE 'Yayo%';
+
+----- ver el tar_codigo mas alto
+-- Ver el TAR_CODIGO más alto para 'Yayo'
+SELECT TAR_CODIGO 
+FROM TARGETA 
+WHERE TAR_CODIGO LIKE 'Yayo%'
+ORDER BY CAST(SUBSTRING(TAR_CODIGO, 5) AS UNSIGNED) DESC
+LIMIT 1;
+
+----- eliminar
+DELETE FROM TARGETA WHERE CLI_CODIGO = '1010';
+DELETE FROM CLIENTES WHERE CLI_CODIGO = '1010';

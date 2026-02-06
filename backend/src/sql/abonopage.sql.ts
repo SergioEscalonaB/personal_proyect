@@ -18,6 +18,23 @@ type Clientes = {
   ESTADO: string;
 };
 
+type ClienteConTarjeta = {
+  // Datos del cliente
+  CLI_CODIGO: string;
+  CLI_NOMBRE: string;
+  CLI_CALLE: string;
+  COB_CODIGO: string;
+  ESTADO: string;
+  // Datos de la tarjeta
+  TAR_CODIGO: string;
+  TAR_VALOR: number;
+  TAR_CUOTA: number;
+  TAR_FECHA: Date;
+  ITEN: number;
+  TIEMPO: number;
+  FP: string;
+};
+
 // Obtener todos los cobros
 export const getCobrosSQL = () => {
   return prisma.$queryRaw<COBRO[]>`
@@ -76,8 +93,10 @@ export const getTarjetaNavegacionSQL = (
   cobroCodigo: string,
   offset: number,
 ) => {
-  return prisma.$queryRaw<CLIENTES[]>`
-    SELECT *
+  return prisma.$queryRaw<ClienteConTarjeta[]>`
+    SELECT C.CLI_CODIGO, C.CLI_NOMBRE, C.CLI_CALLE, 
+    C.COB_CODIGO, C.ESTADO, T.TAR_CODIGO, T.TAR_VALOR, 
+    T.TAR_CUOTA, T.TAR_FECHA, T.ITEN, T.ESTADO, T.TIEMPO, T.FP
     FROM CLIENTES C
     INNER JOIN TARGETA T
         ON C.CLI_CODIGO = T.CLI_CODIGO
@@ -150,4 +169,55 @@ OFFSET (
     WHERE TAR_CODIGO = ${tarcodigo}
 );
     `;
+};
+
+// Crear un nuevo cliente con tarjeta, desplazando las tarjetas existentes (ordenado por ITEN) 
+// para hacer espacio para la nueva tarjeta en la posición deseada
+export const crearClienteConTarjetaSQL = async (
+  cli_codigo: string,
+  cli_nombre: string,
+  cli_calle: string,
+  cob_codigo: string,
+  tar_valor: string,
+  tar_cuota: string,
+  tar_fecha: string,
+  tar_iten: string,
+  tar_tiempo: string,
+  tar_fp: string,
+) => {
+  return await prisma.$transaction([
+    // 1. Desplazar tarjetas existentes
+    prisma.$executeRaw`
+      UPDATE TARGETA 
+      SET ITEN = CAST(ITEN AS INTEGER) + 1
+      WHERE TAR_CODIGO IN (
+        SELECT T.TAR_CODIGO
+        FROM TARGETA T
+        INNER JOIN CLIENTES C ON T.CLI_CODIGO = C.CLI_CODIGO
+        WHERE C.COB_CODIGO = ${cob_codigo}
+        AND CAST(T.ITEN AS INTEGER) >= ${tar_iten}
+      )
+    `,
+    // 2. Insertar cliente
+    prisma.$executeRaw`
+      INSERT INTO CLIENTES (CLI_CODIGO, CLI_NOMBRE, CLI_CALLE, COB_CODIGO, ESTADO)
+      VALUES (${cli_codigo}, ${cli_nombre}, ${cli_calle}, ${cob_codigo}, 'ACTIVO')
+    `,
+    // 3. Insertar tarjeta en la posición deseada
+    prisma.$executeRaw`
+      INSERT INTO TARGETA (TAR_CODIGO, CLI_CODIGO, TAR_VALOR, TAR_CUOTA, TAR_FECHA, ITEN, ESTADO, TIEMPO, FP)
+      SELECT 
+        ${cob_codigo} || (COALESCE(MAX(CAST(SUBSTR(TAR_CODIGO, LENGTH(${cob_codigo}) + 1) AS INTEGER)), 0) + 1),
+        ${cli_codigo},
+        ${tar_valor},
+        ${tar_cuota},
+        ${tar_fecha},
+        ${tar_iten},
+        'ACTIVA',
+        ${tar_tiempo},
+        ${tar_fp}
+      FROM TARGETA 
+      WHERE TAR_CODIGO LIKE ${cob_codigo} || '%'
+    `,
+  ]);
 };

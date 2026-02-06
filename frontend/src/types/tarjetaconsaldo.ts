@@ -6,6 +6,7 @@ export interface TarjetaConSaldo extends Cliente {
   TAR_VALOR: string;
   TAR_CUOTA: string;
   TAR_FECHA: string;
+  ESTADO: string;
   ITEN: string;
   CLAVO: string;
   PRES: string;

@@ -6,10 +6,11 @@ import {
   getTarjetaNavegacionSQL,
   getTarjetasConSaldoSQL,
   getSaldoRestanteSQL,
+  crearClienteConTarjetaSQL,
 } from "../sql/abonopage.sql";
 
 // Obtener todos los cobros
-export const getCobros = async (_req: Request, res: Response) => {
+export const getCobros = async (req: Request, res: Response) => {
   try {
     const data = await getCobrosSQL();
     res.json({ data });
@@ -65,12 +66,12 @@ export const navegarTarjetasConSaldo = async (req: Request, res: Response) => {
 };
 
 // Obtener la descripcion de una tarjeta especifica
-export const getDescripcionTarjeta = async (_req: Request, res: Response) => {
-  const { tarcodigo } = _req.params;
+export const getDescripcionTarjeta = async (req: Request, res: Response) => {
+  const { tarcodigo } = req.params;
   try {
-    const tarcodigoValue = Array.isArray(_req.params.tarcodigo)
-      ? _req.params.tarcodigo[0]
-      : _req.params.tarcodigo;
+    const tarcodigoValue = Array.isArray(req.params.tarcodigo)
+      ? req.params.tarcodigo[0]
+      : req.params.tarcodigo;
     const data = await getDescripcionTarjetaSQL(tarcodigoValue);
     res.json({ data });
   } catch (error: any) {
@@ -79,15 +80,48 @@ export const getDescripcionTarjeta = async (_req: Request, res: Response) => {
 };
 
 // Obtener el saldo restante de una tarjeta
-export const getSaldoRestante = async (_req: Request, res: Response) => {
-  const { tarcodigo } = _req.params;
+export const getSaldoRestante = async (req: Request, res: Response) => {
+  const { tarcodigo } = req.params;
   try {
-    const tarcodigoValue = Array.isArray(_req.params.tarcodigo)
-      ? _req.params.tarcodigo[0]
-      : _req.params.tarcodigo;
+    const tarcodigoValue = Array.isArray(req.params.tarcodigo)
+      ? req.params.tarcodigo[0]
+      : req.params.tarcodigo;
     const data = await getSaldoRestanteSQL(tarcodigoValue);
     res.json({ data });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
-  };
+  }
+};
+
+// Crear un nuevo cliente con tarjeta, desplazando las tarjetas existentes (ordenado por ITEN)
+export const crearClienteNuevo = async (req: Request, res: Response) => {
+  const {
+    cli_codigo,
+    cli_nombre,
+    cli_calle,
+    cob_codigo,
+    tar_valor,
+    tar_cuota,
+    tar_fecha,
+    tar_iten,
+    tar_tiempo,
+    tar_fp,
+  } = req.body;
+  try {
+    const data = await crearClienteConTarjetaSQL(
+      cli_codigo,
+      cli_nombre,
+      cli_calle,
+      cob_codigo,
+      tar_valor,
+      tar_cuota,
+      tar_fecha,
+      tar_iten,
+      tar_tiempo,
+      tar_fp,
+    );
+    res.json({ message: "Cliente creado exitosamente", data });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 };

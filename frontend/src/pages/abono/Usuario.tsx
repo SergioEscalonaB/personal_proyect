@@ -55,6 +55,10 @@ function Selector() {
 
           <div className="fs-5">Dir - Tel:</div>
           <div className="fs-5 fw-bold">{cliente?.CLI_CALLE ?? "-"}</div>
+          <div className="fs-5">Plazo:</div>
+          <div className="fs-5 fw-bold">{cliente?.TIEMPO ?? "-"}</div>
+          <div className="fs-5">Fp:</div>
+          <div className="fs-5 fw-bold">{cliente?.FP ?? "-"}</div>
         </div>
 
         <div className="d-flex align-items-center gap-2 w-100 mt-2">

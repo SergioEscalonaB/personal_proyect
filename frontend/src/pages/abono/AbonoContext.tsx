@@ -36,7 +36,7 @@ type AbonoContextType = {
     tar_fecha: string,
     tar_iten: string,
     tar_tiempo: string,
-    tar_fp: string
+    tar_fp: string,
   ) => void;
   ConteoTarjetas?: () => void;
 };
@@ -158,7 +158,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     tar_fecha: string,
     tar_iten: string,
     tar_tiempo: string,
-    tar_fp: string
+    tar_fp: string,
   ) => {
     try {
       await crearClienteConTarjeta(
@@ -171,8 +171,10 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         tar_fecha,
         tar_iten,
         tar_tiempo,
-        tar_fp
+        tar_fp,
       );
+      //Darle tiempo al backend para procesar la creación del cliente y su tarjeta antes de recargar
+      await new Promise((resolve) => setTimeout(resolve, 500));
       // Recargar en la posicion del nuevo cliente
       if (cobroSeleccionado) {
         const nuevaPosicion = parseInt(tar_iten) - 1;

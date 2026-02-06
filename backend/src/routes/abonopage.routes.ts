@@ -5,6 +5,7 @@ import {
   getTarjetasConSaldo,
   navegarTarjetasConSaldo,
   getDescripcionTarjeta,
+  getSaldoRestante,
 } from "../controllers/abonopage.controller";
 
 const router = express.Router();
@@ -23,5 +24,8 @@ router.get("/:cobroCodigo/tarjeta/navegar/:offset", navegarTarjetasConSaldo);
 
 // Obtener la descripcion de una tarjeta especifica
 router.get("/tarjeta/:tarcodigo/descripcion", getDescripcionTarjeta);
+
+// Obtener el saldo restante de una tarjeta
+router.get("/tarjeta/:tarcodigo/saldo-restante", getSaldoRestante);
 
 export default router;

@@ -42,3 +42,15 @@ export async function getDescripcionTarjeta(tarcodigo: string): Promise<any> {
   const json = await res.json();
   return json.data;
 }
+
+// Obtener el saldo restante de la tarjeta
+export async function getSaldoRestante(tarcodigo: string): Promise<any> {
+  const res = await fetch(`${API_URL}/abonopage/tarjeta/${tarcodigo}/saldo-restante`);
+  if (!res.ok) {
+    throw new Error(`Error obteniendo el saldo restante de la tarjeta: ${res.statusText}`);
+  }
+  const json = await res.json();
+  return json.data[0] ?? null;
+}
+
+

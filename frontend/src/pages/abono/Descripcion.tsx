@@ -26,7 +26,6 @@ function Descripcion() {
           <tbody>
             {descripcion.map((d, i) => (
               <tr key={i}>
-                {/* FECHA_ACT solo en la primera fila */}
                 <td>{d.FECHA_ACT ?? ""}</td>
                 <td>{d.DES_FECHA}</td>
                 <td>${Number(d.DES_ABONO).toLocaleString()}</td>

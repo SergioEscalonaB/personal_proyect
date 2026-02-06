@@ -7,6 +7,7 @@ function Selector() {
     cobroSeleccionado,
     setCobroSeleccionado,
     cliente,
+    saldoRestante,
   } = useAbono();
 
   return (
@@ -66,8 +67,10 @@ function Selector() {
           <div className="fs-5">Fecha:</div>
           <div className="fs-5 fw-bold">{cliente?.TAR_FECHA ?? "-"}</div>
 
-          <div className="fs-5">Saldo:</div>
+          <div className="fs-5">Codigo Tarjeta:</div>
           <div className="fs-5 fw-bold">{cliente?.TAR_CODIGO ?? "-"}</div>
+          <div className="fs-5">Saldo restante:</div>
+          <div className="fs-5 fw-bold">{saldoRestante?.DES_RESTA ?? cliente?.TAR_VALOR}</div>
         </div>
       </div>
     </div>

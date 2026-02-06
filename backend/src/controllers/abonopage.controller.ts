@@ -5,6 +5,7 @@ import {
   getDescripcionTarjetaSQL,
   getTarjetaNavegacionSQL,
   getTarjetasConSaldoSQL,
+  getSaldoRestanteSQL,
 } from "../sql/abonopage.sql";
 
 // Obtener todos los cobros
@@ -77,3 +78,16 @@ export const getDescripcionTarjeta = async (_req: Request, res: Response) => {
   }
 };
 
+// Obtener el saldo restante de una tarjeta
+export const getSaldoRestante = async (_req: Request, res: Response) => {
+  const { tarcodigo } = _req.params;
+  try {
+    const tarcodigoValue = Array.isArray(_req.params.tarcodigo)
+      ? _req.params.tarcodigo[0]
+      : _req.params.tarcodigo;
+    const data = await getSaldoRestanteSQL(tarcodigoValue);
+    res.json({ data });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  };
+};

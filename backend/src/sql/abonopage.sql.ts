@@ -133,3 +133,21 @@ export const getDescripcionTarjetaSQL = (tarcodigo: string) => {
     ORDER BY C.CLI_CODIGO, TAR_FECHA, CAST(DES_RESTA AS SIGNED) DESC;
     `;
 };
+
+// Obtener el saldo restante de una tarjeta
+export const getSaldoRestanteSQL = (tarcodigo: string) => {
+  return prisma.$queryRaw<any[]>`
+  SELECT D.DES_RESTA
+FROM CLIENTES C
+INNER JOIN TARGETA T ON C.CLI_CODIGO = T.CLI_CODIGO
+INNER JOIN DESCRIPCION D ON T.TAR_CODIGO = D.TAR_CODIGO
+WHERE D.TAR_CODIGO = ${tarcodigo}
+ORDER BY C.CLI_CODIGO, TAR_FECHA, CAST(DES_RESTA AS INTEGER) DESC
+LIMIT 1
+OFFSET (
+    SELECT COUNT(*) - 1
+    FROM DESCRIPCION
+    WHERE TAR_CODIGO = ${tarcodigo}
+);
+    `;
+};

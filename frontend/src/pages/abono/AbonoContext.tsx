@@ -4,10 +4,13 @@ import {
   getDescripcionTarjeta,
   getRutas,
   getTarjetasconSaldo,
-  getTotalTarjetas,} from "../../services/abonopag";
+  getTotalTarjetas,
+  getSaldoRestante,
+} from "../../services/abonopag";
 import type { Cobro } from "../../types/cobro";
 import type { TarjetaConSaldo } from "../../types/tarjetaconsaldo";
 import type { DescripcionTarjeta } from "../../types/descripciontarjeta";
+import type { SaldoRestante } from "../../types/saldorestante";
 
 type AbonoContextType = {
   rutas: Cobro[];
@@ -15,6 +18,7 @@ type AbonoContextType = {
   cliente: TarjetaConSaldo | null;
   offset: number;
   descripcion: DescripcionTarjeta[];
+  saldoRestante: SaldoRestante | null;
   setCobroSeleccionado: (c: Cobro) => void;
   siguiente: () => void;
   anterior: () => void;
@@ -112,6 +116,23 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     cargarDescripcion();
   }, [cliente]);
 
+  // Obtener saldo restante de la tarjeta
+  const [saldoRestante, setSaldoRestante] = useState<SaldoRestante | null>(
+    null,
+  );
+  useEffect(() => {
+    const cargarSaldoRestante = async () => {
+      if (cliente?.TAR_CODIGO) {
+        const data = await getSaldoRestante(cliente.TAR_CODIGO);
+        setSaldoRestante(data);
+      } else {
+        setSaldoRestante(null);
+      }
+    };
+
+    cargarSaldoRestante();
+  }, [cliente]);
+
   return (
     <AbonoContext.Provider
       value={{
@@ -125,6 +146,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         primero,
         ultimo,
         descripcion,
+        saldoRestante,
       }}
     >
       {children}

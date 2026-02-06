@@ -3,6 +3,7 @@ import { AbonoProvider } from './pages/abono/AbonoContext.tsx'
 import Selector from './pages/abono/Usuario.tsx'
 import Botones from './pages/abono/Botones.tsx'
 import Descripcion from './pages/abono/Descripcion.tsx'
+import Verificar from './pages/abono/verificar.tsx'
 
 function AbonoPage() {
   return (
@@ -38,7 +39,7 @@ function AbonoPage() {
           <Botones />
         </div>
         <div className="col-3 border p-3 text-center" style={{ height: '20vh' }}>
-          7
+          <Verificar />
         </div>
         <div className="col-2 border p-3 text-center" style={{ height: '20vh' }}>
           8

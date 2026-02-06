@@ -53,4 +53,41 @@ export async function getSaldoRestante(tarcodigo: string): Promise<any> {
   return json.data[0] ?? null;
 }
 
+// Crear un nuevo cliente con su tarjeta y saldo inicial
+export async function crearClienteConTarjeta(
+  cli_codigo: string,
+  cli_nombre: string,
+  cli_calle: string,
+  cob_codigo: string,
+  tar_valor: string,
+  tar_cuota: string,
+  tar_fecha: string,
+  tar_iten: string,
+  tar_tiempo: string,
+  tar_fp: string
+): Promise<any> {
+  const res = await fetch(`${API_URL}/abonopage/cliente/nuevo`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      cli_codigo,
+      cli_nombre,
+      cli_calle,
+      cob_codigo,
+      tar_valor,
+      tar_cuota,
+      tar_fecha,
+      tar_iten,
+      tar_tiempo,
+      tar_fp
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`Error creando el cliente: ${res.statusText}`);
+  }
+  const json = await res.json();
+  return json.data;
+}
 

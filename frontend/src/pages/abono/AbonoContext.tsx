@@ -6,6 +6,7 @@ import {
   getTarjetasconSaldo,
   getTotalTarjetas,
   getSaldoRestante,
+  crearClienteConTarjeta,
 } from "../../services/abonopag";
 import type { Cobro } from "../../types/cobro";
 import type { TarjetaConSaldo } from "../../types/tarjetaconsaldo";
@@ -17,6 +18,7 @@ type AbonoContextType = {
   cobroSeleccionado: Cobro | null;
   cliente: TarjetaConSaldo | null;
   offset: number;
+  total: number;
   descripcion: DescripcionTarjeta[];
   saldoRestante: SaldoRestante | null;
   setCobroSeleccionado: (c: Cobro) => void;
@@ -24,6 +26,18 @@ type AbonoContextType = {
   anterior: () => void;
   primero: () => void;
   ultimo: () => void;
+  crearNuevoCliente: (
+    cli_codigo: string,
+    cli_nombre: string,
+    cli_calle: string,
+    cob_codigo: string,
+    tar_valor: string,
+    tar_cuota: string,
+    tar_fecha: string,
+    tar_iten: string,
+    tar_tiempo: string,
+    tar_fp: string
+  ) => void;
   ConteoTarjetas?: () => void;
 };
 
@@ -133,6 +147,42 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     cargarSaldoRestante();
   }, [cliente]);
 
+  // Crear un nuevo cliente con su tarjeta y saldo inicial
+  const crearNuevoCliente = async (
+    cli_codigo: string,
+    cli_nombre: string,
+    cli_calle: string,
+    cob_codigo: string,
+    tar_valor: string,
+    tar_cuota: string,
+    tar_fecha: string,
+    tar_iten: string,
+    tar_tiempo: string,
+    tar_fp: string
+  ) => {
+    try {
+      await crearClienteConTarjeta(
+        cli_codigo,
+        cli_nombre,
+        cli_calle,
+        cobroSeleccionado ? cobroSeleccionado.COB_CODIGO : cob_codigo,
+        tar_valor,
+        tar_cuota,
+        tar_fecha,
+        tar_iten,
+        tar_tiempo,
+        tar_fp
+      );
+      // Recargar en la posicion del nuevo cliente
+      if (cobroSeleccionado) {
+        const nuevaPosicion = parseInt(tar_iten) - 1;
+        cargarTarjeta(cobroSeleccionado.COB_CODIGO, nuevaPosicion);
+      }
+    } catch (error) {
+      console.error("Error al crear nuevo cliente con tarjeta:", error);
+    }
+  };
+
   return (
     <AbonoContext.Provider
       value={{
@@ -140,6 +190,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         cobroSeleccionado,
         cliente,
         offset,
+        total,
         setCobroSeleccionado,
         siguiente,
         anterior,
@@ -147,6 +198,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         ultimo,
         descripcion,
         saldoRestante,
+        crearNuevoCliente,
       }}
     >
       {children}

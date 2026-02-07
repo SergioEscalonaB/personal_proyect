@@ -15,7 +15,9 @@ export async function getRutas(): Promise<Cobro[]> {
 export async function getTotalTarjetas(cob_codigo: string): Promise<number> {
   const res = await fetch(`${API_URL}/abonopage/${cob_codigo}/total-tarjetas`);
   if (!res.ok) {
-    throw new Error(`Error obteniendo el conteo de tarjetas: ${res.statusText}`);
+    throw new Error(
+      `Error obteniendo el conteo de tarjetas: ${res.statusText}`,
+    );
   }
   const json = await res.json();
   return json.data[0].total;
@@ -24,20 +26,27 @@ export async function getTotalTarjetas(cob_codigo: string): Promise<number> {
 // Cargar tarjetas para un cobro específico con paginación
 export async function getTarjetasconSaldo(
   cob_codigo: string,
-  offset: number): Promise<any[]> {
-    const res = await fetch(`${API_URL}/abonopage/${cob_codigo}/tarjeta/navegar/${offset}`);
-    if (!res.ok) {
-      throw new Error(`Error obteniendo las tarjetas: ${res.statusText}`);
-    }
-    const json = await res.json();
-    return json.data;
+  offset: number,
+): Promise<any[]> {
+  const res = await fetch(
+    `${API_URL}/abonopage/${cob_codigo}/tarjeta/navegar/${offset}`,
+  );
+  if (!res.ok) {
+    throw new Error(`Error obteniendo las tarjetas: ${res.statusText}`);
+  }
+  const json = await res.json();
+  return json.data;
 }
 
 // Mostrar la descripcion de la tarjeta del cliente
 export async function getDescripcionTarjeta(tarcodigo: string): Promise<any> {
-  const res = await fetch(`${API_URL}/abonopage/tarjeta/${tarcodigo}/descripcion`);
+  const res = await fetch(
+    `${API_URL}/abonopage/tarjeta/${tarcodigo}/descripcion`,
+  );
   if (!res.ok) {
-    throw new Error(`Error obteniendo la descripcion de la tarjeta: ${res.statusText}`);
+    throw new Error(
+      `Error obteniendo la descripcion de la tarjeta: ${res.statusText}`,
+    );
   }
   const json = await res.json();
   return json.data;
@@ -45,9 +54,13 @@ export async function getDescripcionTarjeta(tarcodigo: string): Promise<any> {
 
 // Obtener el saldo restante de la tarjeta
 export async function getSaldoRestante(tarcodigo: string): Promise<any> {
-  const res = await fetch(`${API_URL}/abonopage/tarjeta/${tarcodigo}/saldo-restante`);
+  const res = await fetch(
+    `${API_URL}/abonopage/tarjeta/${tarcodigo}/saldo-restante`,
+  );
   if (!res.ok) {
-    throw new Error(`Error obteniendo el saldo restante de la tarjeta: ${res.statusText}`);
+    throw new Error(
+      `Error obteniendo el saldo restante de la tarjeta: ${res.statusText}`,
+    );
   }
   const json = await res.json();
   return json.data[0] ?? null;
@@ -64,7 +77,7 @@ export async function crearClienteConTarjeta(
   tar_fecha: string,
   tar_iten: string,
   tar_tiempo: string,
-  tar_fp: string
+  tar_fp: string,
 ): Promise<any> {
   const res = await fetch(`${API_URL}/abonopage/cliente/nuevo`, {
     method: "POST",
@@ -81,13 +94,15 @@ export async function crearClienteConTarjeta(
       tar_fecha,
       tar_iten,
       tar_tiempo,
-      tar_fp
+      tar_fp,
     }),
   });
-  if (!res.ok) {
-    throw new Error(`Error creando el cliente: ${res.statusText}`);
-  }
   const json = await res.json();
+
+  if (!res.ok) {
+    throw new Error(json.error || "ERROR_DESCONOCIDO");
+  }
+
   return json.data;
 }
 
@@ -100,4 +115,3 @@ export async function getTodosClientes(cob_codigo: string): Promise<any[]> {
   const json = await res.json();
   return json.data;
 }
-

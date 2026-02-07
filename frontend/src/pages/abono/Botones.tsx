@@ -80,31 +80,43 @@ function Botones() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cobroSeleccionado) return;
-    crearNuevoCliente(
-      formData.cli_codigo,
-      formData.cli_nombre,
-      formData.cli_calle,
-      cobroSeleccionado.COB_CODIGO,
-      formData.tar_valor,
-      formData.tar_cuota,
-      formData.tar_fecha,
-      formData.tar_iten,
-      formData.tar_tiempo,
-      formData.tar_fp,
-    );
-    setShowModal(false);
-    setFormData({
-      cli_codigo: "",
-      cli_nombre: "",
-      cli_calle: "",
-      tar_valor: "",
-      valor_prestamo: "",
-      tar_cuota: "",
-      tar_fecha: "",
-      tar_iten: "",
-      tar_tiempo: "",
-      tar_fp: "",
-    });
+    try {
+      await crearNuevoCliente(
+        formData.cli_codigo,
+        formData.cli_nombre,
+        formData.cli_calle,
+        cobroSeleccionado.COB_CODIGO,
+        formData.tar_valor,
+        formData.tar_cuota,
+        formData.tar_fecha,
+        formData.tar_iten,
+        formData.tar_tiempo,
+        formData.tar_fp,
+      );
+      setShowModal(false);
+      setFormData({
+        cli_codigo: "",
+        cli_nombre: "",
+        cli_calle: "",
+        tar_valor: "",
+        valor_prestamo: "",
+        tar_cuota: "",
+        tar_fecha: "",
+        tar_iten: "",
+        tar_tiempo: "",
+        tar_fp: "",
+      });
+    } catch (error: any) {
+      if (error.message === "CLIENTE_YA_TIENE_TARJETA_ACTIVA_EN_ESTE_COBRO") {
+        alert(
+          `Este cliente ${formData.cli_nombre} ya tiene una tarjeta activa en este cobro`,
+        );
+      } else {
+        alert("Ocurrió un error inesperado al crear el cliente");
+        console.error(error);
+      }
+      return;
+    }
   };
 
   // Cargar todos los clientes cuando se marque el checkbox

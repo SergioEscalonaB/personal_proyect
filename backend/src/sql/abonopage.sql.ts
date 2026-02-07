@@ -186,6 +186,21 @@ export const crearClienteConTarjetaSQL = async (
   tar_tiempo: string,
   tar_fp: string,
 ) => {
+
+  // Validar que el cliente no tenga una tarjeta activa en el mismo cobro
+  const existe = await prisma.$queryRaw<{ total: number }[]>`
+    SELECT COUNT(*) as total
+    FROM TARGETA T
+    INNER JOIN CLIENTES C ON T.CLI_CODIGO = C.CLI_CODIGO
+    WHERE T.CLI_CODIGO = ${cli_codigo}
+      AND C.COB_CODIGO = ${cob_codigo}
+      AND T.ESTADO = 'ACTIVA'
+  `;
+  
+  if (existe[0].total > 0) {
+    throw new Error('CLIENTE_YA_TIENE_TARJETA_ACTIVA_EN_ESTE_COBRO');
+  }
+
   return await prisma.$transaction([
     // 1. Desplazar tarjetas existentes
     prisma.$executeRaw`

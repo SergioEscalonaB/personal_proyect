@@ -194,8 +194,12 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
 
         cargarTarjeta(cobroSeleccionado.COB_CODIGO, nuevaPosicion);
       }
-    } catch (error) {
-      console.error("Error al crear nuevo cliente con tarjeta:", error);
+    } catch (error: any) {
+      if (error.message === "CLIENTE_YA_TIENE_TARJETA_ACTIVA_EN_ESTE_COBRO") {
+        alert(`Este cliente ${cli_nombre} ya tiene una tarjeta activa en este cobro`);
+        return;
+      }
+      throw error;
     }
   };
 

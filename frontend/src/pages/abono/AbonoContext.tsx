@@ -173,11 +173,22 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         tar_tiempo,
         tar_fp,
       );
+      const contartarjetas = await getTotalTarjetas(
+        cobroSeleccionado ? cobroSeleccionado.COB_CODIGO : cob_codigo,
+      );
+      setTotal(contartarjetas);
+
       //Darle tiempo al backend para procesar la creación del cliente y su tarjeta antes de recargar
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      //await new Promise((resolve) => setTimeout(resolve, 500));
       // Recargar en la posicion del nuevo cliente
-      if (cobroSeleccionado) {
-        const nuevaPosicion = parseInt(tar_iten) - 1;
+      if (cobroSeleccionado && cliente) {
+        const itenActual = parseFloat(cliente.ITEN);
+        const itenNuevo = parseFloat(tar_iten);
+
+        // Si insertaste antes o en la misma posición, quedas en el mismo offset
+        // Si insertaste después, avanzas 1
+        const nuevaPosicion = itenNuevo <= itenActual ? offset : offset + 1;
+
         cargarTarjeta(cobroSeleccionado.COB_CODIGO, nuevaPosicion);
       }
     } catch (error) {

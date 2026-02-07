@@ -19,7 +19,7 @@ LEFT JOIN (
 ) D ON T.TAR_CODIGO = D.TAR_CODIGO
 
 WHERE T.ESTADO = 'ACTIVA'
-  AND C.COB_CODIGO = 'Yayo'
+  AND C.COB_CODIGO = 'YAYO JUEVES'
   -- esta línea permite tarjetas nuevas SIN descripción
   AND (D.TAR_CODIGO IS NOT NULL OR NOT EXISTS (
         SELECT 1 
@@ -34,7 +34,7 @@ WHERE TAR_CODIGO IN (
     SELECT T.TAR_CODIGO
     FROM TARGETA T
     INNER JOIN CLIENTES C ON T.CLI_CODIGO = C.CLI_CODIGO
-    WHERE C.COB_CODIGO = 'Yayo'
+    WHERE C.COB_CODIGO = 'YAYO JUEVES'
     AND T.ESTADO = 'ACTIVA'
     AND T.TAR_CODIGO NOT IN (
         -- Esta es la subquery de las tarjetas que SÍ deben estar activas
@@ -55,7 +55,7 @@ WHERE TAR_CODIGO IN (
             WHERE rn = 1 AND tuvo_cero = 0
         ) D ON T2.TAR_CODIGO = D.TAR_CODIGO
         WHERE T2.ESTADO = 'ACTIVA'
-          AND C2.COB_CODIGO = 'Yayo'
+          AND C2.COB_CODIGO = 'YAYO JUEVES'
           AND (D.TAR_CODIGO IS NOT NULL OR NOT EXISTS (
                 SELECT 1 FROM DESCRIPCION D2 WHERE D2.TAR_CODIGO = T2.TAR_CODIGO
               ))
@@ -81,7 +81,7 @@ LEFT JOIN (
     WHERE rn = 1 AND tuvo_cero = 0
 ) D ON T.TAR_CODIGO = D.TAR_CODIGO
 WHERE T.ESTADO = 'ACTIVA'
-  AND C.COB_CODIGO = 'Yayo'
+  AND C.COB_CODIGO = 'YAYO JUEVES'
   AND (D.TAR_CODIGO IS NOT NULL OR NOT EXISTS (
         SELECT 1 FROM DESCRIPCION D2 WHERE D2.TAR_CODIGO = T.TAR_CODIGO
       ));

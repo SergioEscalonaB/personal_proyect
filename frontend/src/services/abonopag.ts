@@ -91,3 +91,13 @@ export async function crearClienteConTarjeta(
   return json.data;
 }
 
+// Obtener todos los clientes del cobro
+export async function getTodosClientes(cob_codigo: string): Promise<any[]> {
+  const res = await fetch(`${API_URL}/abonopage/${cob_codigo}/clientes`);
+  if (!res.ok) {
+    throw new Error(`Error obteniendo los clientes: ${res.statusText}`);
+  }
+  const json = await res.json();
+  return json.data;
+}
+

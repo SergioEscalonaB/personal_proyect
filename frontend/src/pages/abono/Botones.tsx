@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAbono } from "./AbonoContext";
 
 function Botones() {
@@ -11,9 +11,12 @@ function Botones() {
     ultimo,
     cobroSeleccionado,
     crearNuevoCliente,
+    todosClientes,
+    cargarTodosClientes,
   } = useAbono();
 
   const [showModal, setShowModal] = useState(false);
+  const [usarClienteExistente, setUsarClienteExistente] = useState(false);
   const [formData, setFormData] = useState({
     cli_codigo: "",
     cli_nombre: "",
@@ -26,6 +29,23 @@ function Botones() {
     tar_tiempo: "",
     tar_fp: "D",
   });
+
+  // Resetear cuando cambie el cobro seleccionado
+  useEffect(() => {
+    setUsarClienteExistente(false);
+    setFormData({
+      cli_codigo: "",
+      cli_nombre: "",
+      cli_calle: "",
+      tar_valor: "",
+      valor_prestamo: "",
+      tar_cuota: "",
+      tar_fecha: "",
+      tar_iten: "",
+      tar_tiempo: "",
+      tar_fp: "D",
+    });
+  }, [cobroSeleccionado]);
 
   // Calcular cuota automáticamente al cambiar valor del préstamo
   // tiempo o frecuencia de pago
@@ -85,6 +105,35 @@ function Botones() {
       tar_tiempo: "",
       tar_fp: "",
     });
+  };
+
+  // Cargar todos los clientes cuando se marque el checkbox
+  const handleCheckboxChange = async (checked: boolean) => {
+    setUsarClienteExistente(checked);
+    if (checked && cobroSeleccionado) {
+      await cargarTodosClientes(cobroSeleccionado.COB_CODIGO);
+    }
+    if (!checked) {
+      setFormData({
+        ...formData,
+        cli_codigo: "",
+        cli_nombre: "",
+        cli_calle: "",
+      });
+    }
+  };
+
+  // Seleccionar cliente existente
+  const handleClienteSelect = (clienteCodigo: string) => {
+    const cliente = todosClientes.find((c) => c.CLI_CODIGO === clienteCodigo);
+    if (cliente) {
+      setFormData({
+        ...formData,
+        cli_codigo: cliente.CLI_CODIGO,
+        cli_nombre: cliente.CLI_NOMBRE,
+        cli_calle: cliente.CLI_CALLE || "",
+      });
+    }
   };
 
   if (!cobroSeleccionado) return null;
@@ -168,19 +217,47 @@ function Botones() {
                 <div className="modal-body">
                   {/* FILA 1 */}
                   <div className="mb-3">
-                    <label className="form-label">Nombre</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.cli_nombre}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          cli_nombre: e.target.value,
-                        })
-                      }
-                      required
-                    />
+                    <div className="d-flex-center gap-2 text">
+                      <label className="form-label">Nombre del cliente</label>
+                      <input
+                        className="mb-3 ms-2 form-check-input"
+                        type="checkbox"
+                        checked={usarClienteExistente}
+                        onChange={(e) => handleCheckboxChange(e.target.checked)}
+                      />
+                      {/*<small className="text-muted">Cliente existente</small>*/}
+                    </div>
+                    {usarClienteExistente ? (
+                      <select
+                        className="form-select"
+                        value={formData.cli_codigo}
+                        onChange={(e) => handleClienteSelect(e.target.value)}
+                        required
+                      >
+                        <option value="">Seleccionar cliente...</option>
+                        {todosClientes.map((cliente) => (
+                          <option
+                            key={cliente.CLI_CODIGO}
+                            value={cliente.CLI_CODIGO}
+                          >
+                            {cliente.CLI_NOMBRE}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.cli_nombre}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            cli_nombre: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    )}
                   </div>
                   {/* FILA 2 */}
                   <div className="row">
@@ -197,6 +274,7 @@ function Botones() {
                               cli_codigo: e.target.value,
                             })
                           }
+                          disabled={usarClienteExistente}
                           required
                         />
                       </div>
@@ -214,6 +292,7 @@ function Botones() {
                               cli_calle: e.target.value,
                             })
                           }
+                          disabled={usarClienteExistente}
                         />
                       </div>
                     </div>

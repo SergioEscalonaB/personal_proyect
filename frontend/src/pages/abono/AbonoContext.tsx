@@ -7,6 +7,7 @@ import {
   getTotalTarjetas,
   getSaldoRestante,
   crearClienteConTarjeta,
+  getTodosClientes,
 } from "../../services/abonopag";
 import type { Cobro } from "../../types/cobro";
 import type { TarjetaConSaldo } from "../../types/tarjetaconsaldo";
@@ -21,6 +22,7 @@ type AbonoContextType = {
   total: number;
   descripcion: DescripcionTarjeta[];
   saldoRestante: SaldoRestante | null;
+  todosClientes: any[];
   setCobroSeleccionado: (c: Cobro) => void;
   siguiente: () => void;
   anterior: () => void;
@@ -39,6 +41,7 @@ type AbonoContextType = {
     tar_fp: string,
   ) => void;
   ConteoTarjetas?: () => void;
+  cargarTodosClientes: (cob_codigo: string) => void;
 };
 
 const AbonoContext = createContext<AbonoContextType | null>(null);
@@ -196,6 +199,18 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  //Cargar clientes existentes cuando se marque el checkbox
+  const [todosClientes, setTodosClientes] = useState<any[]>([]);
+  const cargarTodosClientes = async (cob_codigo: string) => {
+    try {
+      const data = await getTodosClientes(cob_codigo);
+      setTodosClientes(data);
+    } catch (error) {
+      console.error("Error al cargar todos los clientes:", error);
+      setTodosClientes([]);
+    }
+  };
+
   return (
     <AbonoContext.Provider
       value={{
@@ -212,6 +227,8 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         descripcion,
         saldoRestante,
         crearNuevoCliente,
+        todosClientes,
+        cargarTodosClientes,
       }}
     >
       {children}

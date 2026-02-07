@@ -49,6 +49,7 @@ export const getclientesPorCobroSQL = (cobroCodigo: string) => {
         SELECT *
         FROM CLIENTES
         WHERE COB_CODIGO = ${cobroCodigo}
+        GROUP BY CLI_NOMBRE
     `;
 };
 

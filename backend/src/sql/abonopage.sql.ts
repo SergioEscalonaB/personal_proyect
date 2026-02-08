@@ -237,3 +237,17 @@ export const crearClienteConTarjetaSQL = async (
     `,
   ]);
 };
+
+// Creando la descripcion de los abonos
+export const crearDescripcionAbonoSQL = async (
+  tar_codigo: string,
+  fecha_act: string,
+  des_fecha: string,
+  des_abono: string,
+  des_resta: string,
+) => {
+  return await prisma.$executeRaw`
+    INSERT INTO DESCRIPCION (TAR_CODIGO, FECHA_ACT, DES_FECHA, DES_ABONO, DES_RESTA)
+    VALUES (${tar_codigo}, ${fecha_act}, ${des_fecha}, ${des_abono}, ${des_resta})
+  `;
+};

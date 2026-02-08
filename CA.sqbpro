@@ -19,7 +19,7 @@ LEFT JOIN (
 ) D ON T.TAR_CODIGO = D.TAR_CODIGO
 
 WHERE T.ESTADO = 'ACTIVA'
-  AND C.COB_CODIGO = 'YAYO JUEVES'
+  AND C.COB_CODIGO = 'Hernan'
   -- esta línea permite tarjetas nuevas SIN descripción
   AND (D.TAR_CODIGO IS NOT NULL OR NOT EXISTS (
         SELECT 1 
@@ -27,70 +27,19 @@ WHERE T.ESTADO = 'ACTIVA'
         WHERE D2.TAR_CODIGO = T.TAR_CODIGO
       ))
 
-ORDER BY CAST(T.ITEN AS SIGNED);</sql><sql name="SQL 2*">-- Paso 1: Marcar como INACTIVAS y poner ITEN = NULL a las que NO cumplen la condición
-UPDATE TARGETA
-SET ESTADO = 'INACTIVA', ITEN = NULL
-WHERE TAR_CODIGO IN (
-    SELECT T.TAR_CODIGO
-    FROM TARGETA T
+ORDER BY CAST(T.ITEN AS SIGNED);</sql><sql name="SQL 2*">SELECT 
+      C.CLI_CODIGO, 
+      C.CLI_NOMBRE, 
+      T.TAR_CODIGO, 
+      T.TAR_FECHA, 
+      T.TAR_VALOR,
+      D.FECHA_ACT, 
+      D.DES_FECHA, 
+      D.DES_ABONO, 
+      D.DES_RESTA 
+    FROM DESCRIPCION D
+    INNER JOIN TARGETA T ON D.TAR_CODIGO = T.TAR_CODIGO
     INNER JOIN CLIENTES C ON T.CLI_CODIGO = C.CLI_CODIGO
-    WHERE C.COB_CODIGO = 'YAYO JUEVES'
-    AND T.ESTADO = 'ACTIVA'
-    AND T.TAR_CODIGO NOT IN (
-        -- Esta es la subquery de las tarjetas que SÍ deben estar activas
-        SELECT T2.TAR_CODIGO
-        FROM CLIENTES C2
-        INNER JOIN TARGETA T2 ON C2.CLI_CODIGO = T2.CLI_CODIGO
-        LEFT JOIN (
-            SELECT TAR_CODIGO, DES_RESTA
-            FROM (
-                SELECT 
-                    TAR_CODIGO,
-                    DES_RESTA,
-                    ROW_NUMBER() OVER (PARTITION BY TAR_CODIGO ORDER BY DES_FECHA DESC) AS rn,
-                    MAX(CASE WHEN DES_RESTA = 0 THEN 1 ELSE 0 END)
-                        OVER (PARTITION BY TAR_CODIGO) AS tuvo_cero
-                FROM DESCRIPCION
-            ) X
-            WHERE rn = 1 AND tuvo_cero = 0
-        ) D ON T2.TAR_CODIGO = D.TAR_CODIGO
-        WHERE T2.ESTADO = 'ACTIVA'
-          AND C2.COB_CODIGO = 'YAYO JUEVES'
-          AND (D.TAR_CODIGO IS NOT NULL OR NOT EXISTS (
-                SELECT 1 FROM DESCRIPCION D2 WHERE D2.TAR_CODIGO = T2.TAR_CODIGO
-              ))
-    )
-);
-
--- Paso 2: Renumerar solo las ACTIVAS que cumplen la condición
-CREATE TEMP TABLE temp_iten AS
-SELECT T.TAR_CODIGO, ROW_NUMBER() OVER (ORDER BY CAST(T.ITEN AS REAL)) as nuevo_iten
-FROM CLIENTES C
-INNER JOIN TARGETA T ON C.CLI_CODIGO = T.CLI_CODIGO
-LEFT JOIN (
-    SELECT TAR_CODIGO, DES_RESTA
-    FROM (
-        SELECT 
-            TAR_CODIGO,
-            DES_RESTA,
-            ROW_NUMBER() OVER (PARTITION BY TAR_CODIGO ORDER BY DES_FECHA DESC) AS rn,
-            MAX(CASE WHEN DES_RESTA = 0 THEN 1 ELSE 0 END)
-                OVER (PARTITION BY TAR_CODIGO) AS tuvo_cero
-        FROM DESCRIPCION
-    ) X
-    WHERE rn = 1 AND tuvo_cero = 0
-) D ON T.TAR_CODIGO = D.TAR_CODIGO
-WHERE T.ESTADO = 'ACTIVA'
-  AND C.COB_CODIGO = 'YAYO JUEVES'
-  AND (D.TAR_CODIGO IS NOT NULL OR NOT EXISTS (
-        SELECT 1 FROM DESCRIPCION D2 WHERE D2.TAR_CODIGO = T.TAR_CODIGO
-      ));
-
--- Paso 3: Actualizar con los nuevos ITEN consecutivos
-UPDATE TARGETA
-SET ITEN = (SELECT nuevo_iten FROM temp_iten WHERE temp_iten.TAR_CODIGO = TARGETA.TAR_CODIGO)
-WHERE TAR_CODIGO IN (SELECT TAR_CODIGO FROM temp_iten);
-
--- Paso 4: Limpiar
-DROP TABLE temp_iten;
-</sql><current_tab id="0"/></tab_sql></sqlb_project>
+    WHERE D.TAR_CODIGO = 'Hernan30'
+    ORDER BY C.CLI_CODIGO, TAR_FECHA, CAST(DES_RESTA AS SIGNED) DESC;</sql><sql name="SQL 3*">INSERT INTO DESCRIPCION (TAR_CODIGO, FECHA_ACT, DES_FECHA, DES_ABONO, DES_RESTA)
+VALUES ('Hernan30', '07-feb-26-&gt;30', '01-nov-25', 20000, 120000);</sql><current_tab id="1"/></tab_sql></sqlb_project>

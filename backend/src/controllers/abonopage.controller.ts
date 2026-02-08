@@ -7,6 +7,7 @@ import {
   getTarjetasConSaldoSQL,
   getSaldoRestanteSQL,
   crearClienteConTarjetaSQL,
+  crearDescripcionAbonoSQL,
 } from "../sql/abonopage.sql";
 
 // Obtener todos los cobros
@@ -124,4 +125,21 @@ export const crearClienteNuevo = async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
+};
+
+// Creando la descripcion de los abonos
+export const crearDescripcionAbono = async (req: Request, res: Response) => {
+  const { tar_codigo, fecha_act, des_fecha, des_abono, des_resta } = req.body;
+  try {
+    const data = await crearDescripcionAbonoSQL(
+      tar_codigo,
+      fecha_act,
+      des_fecha,
+      des_abono,
+      des_resta,
+      );
+    res.json({ message: "Descripción de abono creada exitosamente", data });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  };
 };

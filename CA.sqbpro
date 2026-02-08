@@ -19,7 +19,7 @@ LEFT JOIN (
 ) D ON T.TAR_CODIGO = D.TAR_CODIGO
 
 WHERE T.ESTADO = 'ACTIVA'
-  AND C.COB_CODIGO = 'Hernan'
+  AND C.COB_CODIGO = 'Yayo'
   -- esta línea permite tarjetas nuevas SIN descripción
   AND (D.TAR_CODIGO IS NOT NULL OR NOT EXISTS (
         SELECT 1 
@@ -27,19 +27,6 @@ WHERE T.ESTADO = 'ACTIVA'
         WHERE D2.TAR_CODIGO = T.TAR_CODIGO
       ))
 
-ORDER BY CAST(T.ITEN AS SIGNED);</sql><sql name="SQL 2*">SELECT 
-      C.CLI_CODIGO, 
-      C.CLI_NOMBRE, 
-      T.TAR_CODIGO, 
-      T.TAR_FECHA, 
-      T.TAR_VALOR,
-      D.FECHA_ACT, 
-      D.DES_FECHA, 
-      D.DES_ABONO, 
-      D.DES_RESTA 
-    FROM DESCRIPCION D
-    INNER JOIN TARGETA T ON D.TAR_CODIGO = T.TAR_CODIGO
-    INNER JOIN CLIENTES C ON T.CLI_CODIGO = C.CLI_CODIGO
-    WHERE D.TAR_CODIGO = 'Hernan30'
-    ORDER BY C.CLI_CODIGO, TAR_FECHA, CAST(DES_RESTA AS SIGNED) DESC;</sql><sql name="SQL 3*">INSERT INTO DESCRIPCION (TAR_CODIGO, FECHA_ACT, DES_FECHA, DES_ABONO, DES_RESTA)
-VALUES ('Hernan30', '07-feb-26-&gt;30', '01-nov-25', 20000, 120000);</sql><current_tab id="1"/></tab_sql></sqlb_project>
+ORDER BY CAST(T.ITEN AS SIGNED);
+</sql><sql name="SQL 2*">DELETE FROM TARGETA WHERE CLI_CODIGO = '44873';
+DELETE FROM CLIENTES WHERE CLI_CODIGO = '44873';</sql><current_tab id="0"/></tab_sql></sqlb_project>

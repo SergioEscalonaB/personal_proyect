@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAbono } from "./AbonoContext";
 
 function Botones() {
@@ -13,6 +13,7 @@ function Botones() {
     crearNuevoCliente,
     todosClientes,
     cargarTodosClientes,
+    crearNuevaDescripcion,
   } = useAbono();
 
   const [showModal, setShowModal] = useState(false);
@@ -148,10 +149,91 @@ function Botones() {
     }
   };
 
+  const [mostrarInputsAbono, setMostrarInputsAbono] = useState(false);
+  const [guardandoAbono, setGuardandoAbono] = useState(false); //Evitar doble guardado
+  const abonoEnprocesoRef = useRef(false); //Evitar doble guardado
+
+  const [formAbono, setFormAbono] = useState({
+    des_abono: "",
+    des_resta: "",
+  });
+
+  const handleAbonoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (guardandoAbono || abonoEnprocesoRef.current) return; //Evitar doble guardado
+
+    setGuardandoAbono(true);
+    abonoEnprocesoRef.current = true;
+
+    try {
+      await crearNuevaDescripcion(formAbono.des_abono, formAbono.des_resta);
+      setFormAbono({ des_abono: "", des_resta: "" });
+      setMostrarInputsAbono(false);
+      alert("Abono registrado exitosamente");
+    } catch (error) {
+      console.error("Error al crear la descripción del abono:", error);
+      alert("Ocurrió un error al registrar el abono");
+    } finally {
+      setGuardandoAbono(false);
+      abonoEnprocesoRef.current = false;
+    }
+  };
+
   if (!cobroSeleccionado) return null;
 
   return (
     <>
+      {/* INPUTS DE ABONO (arriba de los botones) */}
+      {mostrarInputsAbono && (
+        <div className="mb-3">
+          <form onSubmit={handleAbonoSubmit}>
+            <div className="row justify-content-center">
+              <div className="col-auto">
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="Abono"
+                  value={formAbono.des_abono}
+                  onChange={(e) =>
+                    setFormAbono({ ...formAbono, des_abono: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="col-auto">
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="Saldo Restante"
+                  value={formAbono.des_resta}
+                  onChange={(e) =>
+                    setFormAbono({ ...formAbono, des_resta: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div className="col-auto">
+                <button
+                  type="submit"
+                  className="btn btn-success btn-sm"
+                  disabled={guardandoAbono}
+                >
+                  {guardandoAbono ? "Guardando..." : "Guardar"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm ms-2"
+                  onClick={() => setMostrarInputsAbono(false)}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      )}
+
       {/* FILA 1 */}
       <div className="d-flex gap-3 justify-content-center align-items-center mt-3">
         <button
@@ -169,8 +251,8 @@ function Botones() {
         </button>
         <button
           className="btn btn-outline-primary btn-sm"
-          onClick={primero}
-          disabled={true}
+          onClick={() => setMostrarInputsAbono(!mostrarInputsAbono)}
+          disabled={!cliente}
         >
           Abono
         </button>

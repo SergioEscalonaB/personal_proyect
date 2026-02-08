@@ -115,3 +115,32 @@ export async function getTodosClientes(cob_codigo: string): Promise<any[]> {
   const json = await res.json();
   return json.data;
 }
+
+// Creando la descripcion de los abonos
+export async function crearDescripcionAbono(
+  tar_codigo: string,
+  fecha_act : string,
+  des_fecha: string,
+  des_abono: string,
+  des_resta: string
+): Promise<any> {
+  const res = await fetch(`${API_URL}/abonopage/descripcion/crear`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      tar_codigo,
+      fecha_act,
+      des_fecha,
+      des_abono,
+      des_resta
+    }),
+  });
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.error || "ERROR_DESCONOCIDO");
+  }
+
+  return json.data;
+}

@@ -8,6 +8,7 @@ import {
   getSaldoRestante,
   crearClienteConTarjeta,
   getTodosClientes,
+  crearDescripcionAbono,
 } from "../../services/abonopag";
 import type { Cobro } from "../../types/cobro";
 import type { TarjetaConSaldo } from "../../types/tarjetaconsaldo";
@@ -42,6 +43,10 @@ type AbonoContextType = {
   ) => void;
   ConteoTarjetas?: () => void;
   cargarTodosClientes: (cob_codigo: string) => void;
+  crearNuevaDescripcion: (
+    des_abono: string,
+    des_resta: string,
+  ) => Promise<void>;
 };
 
 const AbonoContext = createContext<AbonoContextType | null>(null);
@@ -195,8 +200,10 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         cargarTarjeta(cobroSeleccionado.COB_CODIGO, nuevaPosicion);
       }
     } catch (error: any) {
-      if (error.message === "CLIENTE_YA_TIENE_TARJETA_ACTIVA_EN_ESTE_COBRO") {
-        alert(`Este cliente ${cli_nombre} ya tiene una tarjeta activa en este cobro`);
+      const msg = error?.message ?? "";
+      if (msg.startsWith("CLIENTE_YA_EXISTE")) {
+        const[, cob_codigo] = msg.split("|");
+        alert(`El cliente ya tiene una tarjeta activa en el cobro ${cob_codigo}.`);
         return;
       }
       throw error;
@@ -212,6 +219,61 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Error al cargar todos los clientes:", error);
       setTodosClientes([]);
+    }
+  };
+
+  // Creando la descripcion de los abonos
+  const crearNuevaDescripcion = async (
+    des_abono: string,
+    des_resta: string,
+  ) => {
+    if (!cliente?.TAR_CODIGO) {
+      console.error("No hay cliente seleccionado");
+      return;
+    }
+    try {
+      // Generar fecha_act con formato: "07-feb-26->30000"
+      const hoy = new Date();
+      const dd = String(hoy.getDate()).padStart(2, "0");
+      const meses = [
+        "ene",
+        "feb",
+        "mar",
+        "abr",
+        "may",
+        "jun",
+        "jul",
+        "ago",
+        "sep",
+        "oct",
+        "nov",
+        "dic",
+      ];
+      const mes = meses[hoy.getMonth()];
+      const yy = String(hoy.getFullYear()).slice(-2);
+      const fecha_act = `${dd}-${mes}-${yy}->${des_abono}`;
+
+      // Generar des_fecha con formato: "DD-MM-YY"
+      const mm = String(hoy.getMonth() + 1).padStart(2, "0");
+      const des_fecha = `${dd}-${mm}-${yy}`;
+
+      await crearDescripcionAbono(
+        cliente.TAR_CODIGO,
+        fecha_act,
+        des_fecha,
+        des_abono,
+        des_resta,
+      );
+
+      // Recargar la descripcion y el saldo restante
+      const desc = await getDescripcionTarjeta(cliente.TAR_CODIGO);
+      setDescripcion(desc);
+      // Recargar el saldo restante
+      const saldo = await getSaldoRestante(cliente.TAR_CODIGO);
+      setSaldoRestante(saldo);
+    } catch (error) {
+      console.error("Error al crear la descripción del abono:", error);
+      throw error;
     }
   };
 
@@ -233,6 +295,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         crearNuevoCliente,
         todosClientes,
         cargarTodosClientes,
+        crearNuevaDescripcion,
       }}
     >
       {children}

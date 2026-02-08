@@ -258,7 +258,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
       const des_fecha = `${dd}-${mm}-${yy}`;
 
       await crearDescripcionAbono(
-        cliente.TAR_CODIGO,
+        cliente.TAR_CODIGO, //Esto es lo que se debe corregir
         fecha_act,
         des_fecha,
         des_abono,

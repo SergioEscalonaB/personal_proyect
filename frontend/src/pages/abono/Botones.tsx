@@ -161,7 +161,9 @@ function Botones() {
   const handleAbonoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (guardandoAbono || abonoEnprocesoRef.current) return; //Evitar doble guardado
+    if (guardandoAbono || abonoEnprocesoRef.current) {
+      return;
+    } //Evitar doble guardado
 
     setGuardandoAbono(true);
     abonoEnprocesoRef.current = true;

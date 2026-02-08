@@ -13,7 +13,7 @@ import {
 const router = express.Router();
 
 // Obtener todos los cobros
-router.get('/cobros', getCobros);
+router.get("/cobros", getCobros);
 
 // Obtener todos los clientes de un cobro especifico
 router.get("/:cobroCodigo/clientes", getclientesPorCobro);
@@ -35,6 +35,5 @@ router.post("/cliente/nuevo", crearClienteNuevo);
 
 // Creando la descripcion de los abonos
 router.post("/descripcion/crear", crearDescripcionAbono);
-
 
 export default router;

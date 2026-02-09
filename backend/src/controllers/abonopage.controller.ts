@@ -8,6 +8,7 @@ import {
   getSaldoRestanteSQL,
   crearClienteConTarjetaSQL,
   crearDescripcionAbonoSQL,
+  reorganizarCobroSQL,
 } from "../sql/abonopage.sql";
 
 // Obtener todos los cobros
@@ -139,6 +140,17 @@ export const crearDescripcionAbono = async (req: Request, res: Response) => {
       des_resta,
       );
     res.json({ message: "Descripción de abono creada exitosamente", data });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  };
+};
+
+// Reorganizar cobro
+export const reorganizarCobro = async (req: Request, res: Response) => {
+  const { cob_codigo } = req.body;
+  try {
+    const data = await reorganizarCobroSQL(cob_codigo);
+    res.json({ message: "Cobro reorganizado exitosamente", data });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   };

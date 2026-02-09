@@ -271,6 +271,13 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
       // Recargar el saldo restante
       const saldo = await getSaldoRestante(cliente.TAR_CODIGO);
       setSaldoRestante(saldo);
+      // Recargar el conteo de los clientes activos con saldo y tarjeta
+      if (cobroSeleccionado) {
+        const totalTarjetas = await getTotalTarjetas(
+          cobroSeleccionado.COB_CODIGO,
+        );
+        setTotal(totalTarjetas);
+      }
     } catch (error) {
       console.error("Error al crear la descripción del abono:", error);
       throw error;

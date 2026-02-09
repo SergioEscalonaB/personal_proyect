@@ -201,6 +201,13 @@ export const crearClienteConTarjetaSQL = async (
     ); // El cliente ya tiene una tarjeta activa en este cobro
   }
 
+  // Verificar si el cliente ya existe en la base de datos
+  const clienteExistente = await prisma.$queryRaw<{ total: number }[]>`
+    SELECT COUNT(*) as total
+    FROM CLIENTES
+    WHERE CLI_CODIGO = ${cli_codigo}
+  `;
+
   return await prisma.$transaction([
     // 1. Desplazar tarjetas existentes
     prisma.$executeRaw`
@@ -214,10 +221,21 @@ export const crearClienteConTarjetaSQL = async (
         AND CAST(T.ITEN AS INTEGER) >= ${tar_iten}
       )
     `,
-    // 2. Insertar cliente
-    prisma.$executeRaw`
-      INSERT INTO CLIENTES (CLI_CODIGO, CLI_NOMBRE, CLI_CALLE, COB_CODIGO, ESTADO)
-      VALUES (${cli_codigo}, ${cli_nombre}, ${cli_calle}, ${cob_codigo}, 'ACTIVO')
+    // 2. Insertar o actualizar cliente
+    clienteExistente[0].total > 0
+      ? // Si existe, actualizar
+        prisma.$executeRaw`
+          UPDATE CLIENTES
+          SET CLI_NOMBRE = ${cli_nombre},
+              CLI_CALLE = ${cli_calle},
+              COB_CODIGO = ${cob_codigo},
+              ESTADO = 'ACTIVO'
+          WHERE CLI_CODIGO = ${cli_codigo}
+        `
+      : // Si no existe, insertar
+        prisma.$executeRaw`
+          INSERT INTO CLIENTES (CLI_CODIGO, CLI_NOMBRE, CLI_CALLE, COB_CODIGO, ESTADO)
+          VALUES (${cli_codigo}, ${cli_nombre}, ${cli_calle}, ${cob_codigo}, 'ACTIVO')
     `,
     // 3. Insertar tarjeta en la posición deseada
     prisma.$executeRaw`
@@ -238,7 +256,7 @@ export const crearClienteConTarjetaSQL = async (
   ]);
 };
 
-// Creando la descripcion de los abonos
+/// Crear abono Y reorganizar automáticamente el cobro
 export const crearDescripcionAbonoSQL = async (
   tar_codigo: string,
   fecha_act: string,
@@ -246,8 +264,134 @@ export const crearDescripcionAbonoSQL = async (
   des_abono: string,
   des_resta: string,
 ) => {
-  return await prisma.$executeRaw`
-    INSERT INTO DESCRIPCION (TAR_CODIGO, FECHA_ACT, DES_FECHA, DES_ABONO, DES_RESTA)
-    VALUES (${tar_codigo}, ${fecha_act}, ${des_fecha}, ${des_abono}, ${des_resta})
+  // Obtener el COB_CODIGO de esta tarjeta
+  const tarjeta = await prisma.$queryRaw<{ COB_CODIGO: string }[]>`
+    SELECT C.COB_CODIGO
+    FROM TARGETA T
+    INNER JOIN CLIENTES C ON T.CLI_CODIGO = C.CLI_CODIGO
+    WHERE T.TAR_CODIGO = ${tar_codigo}
+    LIMIT 1
   `;
+
+  const cob_codigo = tarjeta[0]?.COB_CODIGO;
+
+  if (!cob_codigo) {
+    throw new Error("No se encontró el cobro asociado a esta tarjeta");
+  }
+
+  return await prisma.$transaction([
+    // 1. Insertar el abono
+    prisma.$executeRaw`
+      INSERT INTO DESCRIPCION (TAR_CODIGO, FECHA_ACT, DES_FECHA, DES_ABONO, DES_RESTA)
+      VALUES (${tar_codigo}, ${fecha_act}, ${des_fecha}, ${des_abono}, ${des_resta})
+    `,
+
+    // 2. Si DES_RESTA = 0, desactivar la TARJETA y poner ITEN = NULL
+    prisma.$executeRaw`
+      UPDATE TARGETA
+      SET ESTADO = 'INACTIVA', ITEN = NULL
+      WHERE TAR_CODIGO = ${tar_codigo}
+        AND ${des_resta} = '0'
+    `,
+
+    // 3. Si DES_RESTA = 0, desactivar el CLIENTE asociado
+    prisma.$executeRaw`
+      UPDATE CLIENTES
+      SET ESTADO = 'INACTIVO'
+      WHERE CLI_CODIGO IN (
+        SELECT CLI_CODIGO 
+        FROM TARGETA 
+        WHERE TAR_CODIGO = ${tar_codigo}
+      )
+      AND ${des_resta} = '0'
+    `,
+
+    // 4. RENUMERAR todas las tarjetas activas del cobro (solo si se pagó)
+    // Crear tabla temporal con nuevos ITENs consecutivos
+    prisma.$executeRaw`
+      CREATE TEMP TABLE IF NOT EXISTS temp_iten_abono AS
+      SELECT T.TAR_CODIGO, ROW_NUMBER() OVER (ORDER BY CAST(T.ITEN AS REAL)) as nuevo_iten
+      FROM CLIENTES C
+      INNER JOIN TARGETA T ON C.CLI_CODIGO = T.CLI_CODIGO
+      LEFT JOIN (
+        SELECT TAR_CODIGO, DES_RESTA
+        FROM (
+          SELECT 
+            TAR_CODIGO,
+            DES_RESTA,
+            ROW_NUMBER() OVER (PARTITION BY TAR_CODIGO ORDER BY DES_FECHA DESC) AS rn,
+            MAX(CASE WHEN DES_RESTA = 0 THEN 1 ELSE 0 END)
+              OVER (PARTITION BY TAR_CODIGO) AS tuvo_cero
+          FROM DESCRIPCION
+        ) X
+        WHERE rn = 1 AND tuvo_cero = 0
+      ) D ON T.TAR_CODIGO = D.TAR_CODIGO
+      WHERE T.ESTADO = 'ACTIVA'
+        AND C.COB_CODIGO = ${cob_codigo}
+        AND (D.TAR_CODIGO IS NOT NULL OR NOT EXISTS (
+          SELECT 1 FROM DESCRIPCION D2 WHERE D2.TAR_CODIGO = T.TAR_CODIGO
+        ))
+    `,
+
+    // 5. Actualizar ITENs con números consecutivos
+    prisma.$executeRaw`
+      UPDATE TARGETA
+      SET ITEN = (SELECT nuevo_iten FROM temp_iten_abono WHERE temp_iten_abono.TAR_CODIGO = TARGETA.TAR_CODIGO)
+      WHERE TAR_CODIGO IN (SELECT TAR_CODIGO FROM temp_iten_abono)
+    `,
+
+    // 6. Limpiar tabla temporal
+    prisma.$executeRaw`
+      DROP TABLE IF EXISTS temp_iten_abono
+    `,
+  ]);
+};
+
+// Reorganizar cobro: solo para casos donde quedaron tarjetas sin marcar
+// (normalmente ya está todo organizado por crearDescripcionAbonoSQL)
+export const reorganizarCobroSQL = async (cob_codigo: string) => {
+  try {
+    return await prisma.$transaction([
+      // Paso 1: Marcar como INACTIVAS cualquier tarjeta que quedó pendiente con DES_RESTA = 0
+      prisma.$executeRaw`
+        UPDATE TARGETA
+        SET ESTADO = 'INACTIVA', ITEN = NULL
+        WHERE TAR_CODIGO IN (
+          SELECT T.TAR_CODIGO
+          FROM TARGETA T
+          INNER JOIN CLIENTES C ON T.CLI_CODIGO = C.CLI_CODIGO
+          LEFT JOIN (
+            SELECT TAR_CODIGO, DES_RESTA
+            FROM (
+              SELECT 
+                TAR_CODIGO,
+                DES_RESTA,
+                ROW_NUMBER() OVER (PARTITION BY TAR_CODIGO ORDER BY DES_FECHA DESC) AS rn
+              FROM DESCRIPCION
+            ) X
+            WHERE rn = 1 AND DES_RESTA = 0
+          ) D ON T.TAR_CODIGO = D.TAR_CODIGO
+          WHERE C.COB_CODIGO = ${cob_codigo}
+            AND T.ESTADO = 'ACTIVA'
+            AND D.TAR_CODIGO IS NOT NULL
+        )
+      `,
+
+      // Paso 2: Marcar clientes como INACTIVOS
+      prisma.$executeRaw`
+        UPDATE CLIENTES
+        SET ESTADO = 'INACTIVO'
+        WHERE CLI_CODIGO IN (
+          SELECT T.CLI_CODIGO
+          FROM TARGETA T
+          INNER JOIN CLIENTES C ON T.CLI_CODIGO = C.CLI_CODIGO
+          WHERE T.ESTADO = 'INACTIVA'
+            AND C.COB_CODIGO = ${cob_codigo}
+            AND C.ESTADO = 'ACTIVO'
+        )
+      `,
+    ]);
+  } catch (error) {
+    throw new Error(`Error al reorganizar cobro: ${error}`);
+  }
 };

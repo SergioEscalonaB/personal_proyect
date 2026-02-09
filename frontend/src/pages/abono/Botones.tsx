@@ -14,6 +14,7 @@ function Botones() {
     todosClientes,
     cargarTodosClientes,
     crearNuevaDescripcion,
+    saldoRestante,
   } = useAbono();
 
   const [showModal, setShowModal] = useState(false);
@@ -149,36 +150,93 @@ function Botones() {
     }
   };
 
+  // Función para crear cliente con tarjeta (usada tanto para nuevo cliente como para cliente existente)
   const [mostrarInputsAbono, setMostrarInputsAbono] = useState(false);
-  const [guardandoAbono, setGuardandoAbono] = useState(false); //Evitar doble guardado
-  const abonoEnprocesoRef = useRef(false); //Evitar doble guardado
+  const [guardandoAbono, setGuardandoAbono] = useState(false);
+  const abonoEnprocesoRef = useRef(false);
+
+  // Refs para manejar el enfoque de los inputs
+  const inputAbonoRef = useRef<HTMLInputElement>(null);
+  const inputRestaRef = useRef<HTMLInputElement>(null);
 
   const [formAbono, setFormAbono] = useState({
     des_abono: "",
     des_resta: "",
   });
 
+  // Calcular saldo restante automáticamente
+  const calcularSaldoRestante = () => {
+    if (!cliente) return "";
+
+    const abonoActual = parseFloat(formAbono.des_abono) || 0;
+    const saldoAnterior =
+      parseFloat(saldoRestante?.DES_RESTA ?? cliente?.TAR_VALOR) || 0;
+    const nuevoSaldo = saldoAnterior - abonoActual;
+
+    return nuevoSaldo.toString();
+  };
+
+  // Función para crear nueva descripción de abono
+  const saldoCalculado = calcularSaldoRestante();
+
   const handleAbonoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Si ambos campos están vacíos, pasar al siguiente cliente
+    if (!formAbono.des_abono.trim() && !formAbono.des_resta.trim()) {
+      siguiente();
+      return;
+    }
+
+    // Validar que el saldo restante coincida con el calculado
+    if (formAbono.des_resta !== saldoCalculado) {
+      alert(`Saldo restante incorrecto. Debería ser: ${saldoCalculado}`);
+      return;
+    }
+
     if (guardandoAbono || abonoEnprocesoRef.current) {
       return;
-    } //Evitar doble guardado
+    }
 
+    // Marcar que se está guardando el abono para evitar envíos múltiples
     setGuardandoAbono(true);
     abonoEnprocesoRef.current = true;
 
     try {
       await crearNuevaDescripcion(formAbono.des_abono, formAbono.des_resta);
+      // Limpiar los campos después de guardar
       setFormAbono({ des_abono: "", des_resta: "" });
-      setMostrarInputsAbono(false);
-      alert("Abono registrado exitosamente");
+      // Pasar al siguiente cliente automáticamente
+      siguiente();
     } catch (error) {
       console.error("Error al crear la descripción del abono:", error);
       alert("Ocurrió un error al registrar el abono");
     } finally {
       setGuardandoAbono(false);
       abonoEnprocesoRef.current = false;
+    }
+  };
+
+  // Enfocar automáticamente el primer input cuando se abre el formulario o cambia de cliente
+  useEffect(() => {
+    if (mostrarInputsAbono && inputAbonoRef.current) {
+      inputAbonoRef.current.focus();
+    }
+  }, [mostrarInputsAbono, cliente]);
+
+  // Manejar el Enter en el primer input (pasar al segundo)
+  const handleAbonoKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      inputRestaRef.current?.focus();
+    }
+  };
+
+  // Manejar el Enter en el segundo input (submit)
+  const handleRestaKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAbonoSubmit(e as any);
     }
   };
 
@@ -190,46 +248,55 @@ function Botones() {
       {mostrarInputsAbono && (
         <div className="mb-3">
           <form onSubmit={handleAbonoSubmit}>
-            <div className="row justify-content-center">
+            <div className="row justify-content-center align-items-center">
               <div className="col-auto">
+                <label className="form-label text-muted small mb-1">
+                  Abono
+                </label>
                 <input
+                  ref={inputAbonoRef}
                   type="text"
                   className="form-control form-control-sm"
-                  placeholder="Abono"
+                  placeholder="0"
                   value={formAbono.des_abono}
                   onChange={(e) =>
                     setFormAbono({ ...formAbono, des_abono: e.target.value })
                   }
-                  required
+                  onKeyDown={handleAbonoKeyDown}
                 />
               </div>
               <div className="col-auto">
+                <label className="form-label text-muted small mb-1">
+                  Saldo Restante
+                </label>
                 <input
+                  ref={inputRestaRef}
                   type="text"
                   className="form-control form-control-sm"
-                  placeholder="Saldo Restante"
+                  placeholder="0"
                   value={formAbono.des_resta}
                   onChange={(e) =>
                     setFormAbono({ ...formAbono, des_resta: e.target.value })
                   }
-                  required
+                  onKeyDown={handleRestaKeyDown}
                 />
               </div>
               <div className="col-auto">
-                <button
-                  type="submit"
-                  className="btn btn-success btn-sm"
-                  disabled={guardandoAbono}
-                >
-                  {guardandoAbono ? "Guardando..." : "Guardar"}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm ms-2"
-                  onClick={() => setMostrarInputsAbono(false)}
-                >
-                  Cancelar
-                </button>
+                <label className="form-label text-muted small mb-1">
+                  Calculado
+                </label>
+                <div className="text-center">
+                  <strong
+                    className={
+                      formAbono.des_resta &&
+                      formAbono.des_resta !== saldoCalculado
+                        ? "text-danger fs-5"
+                        : "text-success fs-5"
+                    }
+                  >
+                    {saldoCalculado || "—"}
+                  </strong>
+                </div>
               </div>
             </div>
           </form>
@@ -256,7 +323,7 @@ function Botones() {
           onClick={() => setMostrarInputsAbono(!mostrarInputsAbono)}
           disabled={!cliente}
         >
-          Abono
+          {mostrarInputsAbono ? "Cerrar Abono" : "Abrir Abono"}
         </button>
       </div>
 

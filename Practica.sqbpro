@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="" readonly="0" foreign_keys="" case_sensitive_like="" temp_store="" wal_autocheckpoint="" synchronous=""/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="1387"/><column_width id="4" width="0"/></tab_structure><tab_browse><table title="." custom_title="0" dock_id="8" table="0,0:"/><dock_state state="000000ff00000000fd00000001000000020000000000000000fc0100000008fb000000160064006f0063006b00420072006f00770073006500310100000000ffffffff0000000000000000fb000000160064006f0063006b00420072006f00770073006500320100000000ffffffff0000000000000000fb000000160064006f0063006b00420072006f00770073006500330100000000ffffffff0000000000000000fb000000160064006f0063006b00420072006f00770073006500340100000000ffffffff0000000000000000fb000000160064006f0063006b00420072006f00770073006500350100000000ffffffff0000000000000000fb000000160064006f0063006b00420072006f00770073006500360100000000ffffffff0000000000000000fb000000160064006f0063006b00420072006f00770073006500370100000000ffffffff0000000000000000fb000000160064006f0063006b00420072006f00770073006500380100000000ffffffff0000011800ffffff000000000000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings/></tab_browse><tab_sql><sql name="SQL 1*">SELECT
+    C.CLI_CODIGO,
+    C.CLI_NOMBRE,
+    T.TAR_CODIGO,
+    T.TAR_FECHA,
+    T.TAR_VALOR,
+    D.FECHA_ACT,
+    D.DES_FECHA,
+    D.DES_ABONO,
+    D.DES_RESTA
+FROM DESCRIPCION D
+INNER JOIN TARGETA T ON D.TAR_CODIGO = T.TAR_CODIGO
+INNER JOIN CLIENTES C ON T.CLI_CODIGO = C.CLI_CODIGO
+WHERE T.TAR_CODIGO = 'Hernan79'
+ORDER BY D.DES_FECHA DESC;</sql><sql name="SQL 2*">INSERT INTO DESCRIPCION (TAR_CODIGO, FECHA_ACT, DES_FECHA, DES_ABONO, DES_RESTA)
+SELECT 'Hernan83', '08-feb-26 -&gt; 50000', '01-nov-26', 50000, 200000
+FROM TARGETA T
+INNER JOIN CLIENTES C 
+ON T.CLI_CODIGO = C.CLI_CODIGO  -- ajusta el campo de relación
+WHERE T.TAR_CODIGO = 'Hernan83'
+  AND C.COB_CODIGO = 'Hernan';</sql><sql name="SQL 3*">SELECT * 
+FROM TARGETA T
+INNER JOIN DESCRIPCION D
+ON T.TAR_CODIGO = D.TAR_CODIGO
+WHERE D.TAR_CODIGO = 'Hernan79'
+ORDER BY TAR_FECHA, CAST(DES_RESTA AS SIGNED) DESC</sql><sql name="SQL 4*">-- Paso 1: Marcar como INACTIVAS y poner ITEN = NULL a las que NO cumplen la condición
+UPDATE TARGETA
+SET ESTADO = 'INACTIVA', ITEN = NULL
+WHERE TAR_CODIGO IN (
+    SELECT T.TAR_CODIGO
+    FROM TARGETA T
+    INNER JOIN CLIENTES C ON T.CLI_CODIGO = C.CLI_CODIGO
+    WHERE C.COB_CODIGO = 'Hernan'
+    AND T.ESTADO = 'ACTIVA'
+    AND T.TAR_CODIGO NOT IN (
+        -- Esta es la subquery de las tarjetas que SÍ deben estar activas
+        SELECT T2.TAR_CODIGO
+        FROM CLIENTES C2
+        INNER JOIN TARGETA T2 ON C2.CLI_CODIGO = T2.CLI_CODIGO
+        LEFT JOIN (
+            SELECT TAR_CODIGO, DES_RESTA
+            FROM (
+                SELECT 
+                    TAR_CODIGO,
+                    DES_RESTA,
+                    ROW_NUMBER() OVER (PARTITION BY TAR_CODIGO ORDER BY DES_FECHA DESC) AS rn,
+                    MAX(CASE WHEN DES_RESTA = 0 THEN 1 ELSE 0 END)
+                        OVER (PARTITION BY TAR_CODIGO) AS tuvo_cero
+                FROM DESCRIPCION
+            ) X
+            WHERE rn = 1 AND tuvo_cero = 0
+        ) D ON T2.TAR_CODIGO = D.TAR_CODIGO
+        WHERE T2.ESTADO = 'ACTIVA'
+          AND C2.COB_CODIGO = 'Hernan'
+          AND (D.TAR_CODIGO IS NOT NULL OR NOT EXISTS (
+                SELECT 1 FROM DESCRIPCION D2 WHERE D2.TAR_CODIGO = T2.TAR_CODIGO
+              ))
+    )
+);
+
+-- Paso 2: Renumerar solo las ACTIVAS que cumplen la condición
+CREATE TEMP TABLE temp_iten AS
+SELECT T.TAR_CODIGO, ROW_NUMBER() OVER (ORDER BY CAST(T.ITEN AS REAL)) as nuevo_iten
+FROM CLIENTES C
+INNER JOIN TARGETA T ON C.CLI_CODIGO = T.CLI_CODIGO
+LEFT JOIN (
+    SELECT TAR_CODIGO, DES_RESTA
+    FROM (
+        SELECT 
+            TAR_CODIGO,
+            DES_RESTA,
+            ROW_NUMBER() OVER (PARTITION BY TAR_CODIGO ORDER BY DES_FECHA DESC) AS rn,
+            MAX(CASE WHEN DES_RESTA = 0 THEN 1 ELSE 0 END)
+                OVER (PARTITION BY TAR_CODIGO) AS tuvo_cero
+        FROM DESCRIPCION
+    ) X
+    WHERE rn = 1 AND tuvo_cero = 0
+) D ON T.TAR_CODIGO = D.TAR_CODIGO
+WHERE T.ESTADO = 'ACTIVA'
+  AND C.COB_CODIGO = 'Hernan'
+  AND (D.TAR_CODIGO IS NOT NULL OR NOT EXISTS (
+        SELECT 1 FROM DESCRIPCION D2 WHERE D2.TAR_CODIGO = T.TAR_CODIGO
+      ));
+
+-- Paso 3: Actualizar con los nuevos ITEN consecutivos
+UPDATE TARGETA
+SET ITEN = (SELECT nuevo_iten FROM temp_iten WHERE temp_iten.TAR_CODIGO = TARGETA.TAR_CODIGO)
+WHERE TAR_CODIGO IN (SELECT TAR_CODIGO FROM temp_iten);
+
+-- Paso 4: Limpiar
+DROP TABLE temp_iten;
+</sql><current_tab id="3"/></tab_sql></sqlb_project>

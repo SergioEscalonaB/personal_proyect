@@ -52,7 +52,8 @@ function Botones() {
   // Calcular cuota automáticamente al cambiar valor del préstamo
   // tiempo o frecuencia de pago
   const calcularCuota = (valor: string, tiempo: string, fp: string) => {
-    const valorNum = parseFloat(valor) || 0;
+    const valorReal = convertirReal(valor);
+    const valorNum = parseFloat(valorReal) || 0;
     const tiempoNum = parseFloat(tiempo) || 1;
 
     const diasPorPeriodo: { [key: string]: number } = {
@@ -64,8 +65,9 @@ function Botones() {
 
     const dias = diasPorPeriodo[fp] || 1;
     const numeroCuotas = Math.ceil(tiempoNum / dias);
-    const cuota = numeroCuotas > 0 ? Math.round(valorNum / numeroCuotas) : 0;
-    return cuota.toString();
+    const cuotaReal =
+      numeroCuotas > 0 ? Math.round(valorNum / numeroCuotas) : 0;
+    return convertirMostrado(cuotaReal.toString());
   };
 
   // Manejadores que actualizan cuota automáticamente al cambiar tiempo o frecuencia de pago
@@ -88,8 +90,8 @@ function Botones() {
         formData.cli_nombre,
         formData.cli_calle,
         cobroSeleccionado.COB_CODIGO,
-        formData.tar_valor,
-        formData.tar_cuota,
+        convertirReal(formData.tar_valor),
+        convertirReal(formData.tar_cuota),
         formData.tar_fecha,
         formData.tar_iten,
         formData.tar_tiempo,
@@ -171,7 +173,8 @@ function Botones() {
     const abonoActual = parseFloat(formAbono.des_abono) || 0;
     const saldoAnterior =
       parseFloat(saldoRestante?.DES_RESTA ?? cliente?.TAR_VALOR) || 0;
-    const nuevoSaldo = saldoAnterior - abonoActual;
+    const saldoAnteriorMil = saldoAnterior / 1000;
+    const nuevoSaldo = saldoAnteriorMil - abonoActual;
 
     return nuevoSaldo.toString();
   };
@@ -203,7 +206,10 @@ function Botones() {
     abonoEnprocesoRef.current = true;
 
     try {
-      await crearNuevaDescripcion(formAbono.des_abono, formAbono.des_resta);
+      await crearNuevaDescripcion(
+        convertirReal(formAbono.des_abono),
+        convertirReal(formAbono.des_resta),
+      );
       // Limpiar los campos después de guardar
       setFormAbono({ des_abono: "", des_resta: "" });
       // Pasar al siguiente cliente automáticamente
@@ -240,6 +246,35 @@ function Botones() {
     }
   };
 
+  // Convertir entrada a valor real (agregar 000)
+  const convertirReal = (valor: string): string => {
+    if (!valor.trim()) return "";
+
+    // Convertir a número y multiplicar por 1000
+    const numero = parseFloat(valor.replace(/,/g, "."));
+    if (isNaN(numero)) return "";
+
+    return (numero * 1000).toString();
+  };
+
+  // Convertir valor real a entrada (quitar 000)
+  const convertirMostrado = (valor: string): string => {
+    if (!valor.trim()) return "";
+
+    const numero = parseFloat(valor);
+    if (isNaN(numero)) return "";
+
+    return (numero / 1000).toString();
+  };
+
+  // Formatear con separadores de miles para visualización
+  const formatearMiles = (valor: string): string => {
+    if (!valor) return "";
+    const numero = parseFloat(valor);
+    if (isNaN(numero)) return valor;
+    return new Intl.NumberFormat("es-CO").format(numero);
+  };
+
   if (!cobroSeleccionado) return null;
 
   return (
@@ -251,7 +286,7 @@ function Botones() {
             <div className="row justify-content-center align-items-center">
               <div className="col-auto">
                 <label className="form-label text-muted small mb-1">
-                  Abono
+                  Abono x1000
                 </label>
                 <input
                   ref={inputAbonoRef}
@@ -267,7 +302,7 @@ function Botones() {
               </div>
               <div className="col-auto">
                 <label className="form-label text-muted small mb-1">
-                  Saldo Restante
+                  Saldo Restante x1000
                 </label>
                 <input
                   ref={inputRestaRef}
@@ -296,6 +331,11 @@ function Botones() {
                   >
                     {saldoCalculado || "—"}
                   </strong>
+                  {saldoCalculado && (
+                    <div className="text-muted" style={{ fontSize: "0.7rem" }}>
+                      ${formatearMiles(convertirReal(saldoCalculado))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -468,6 +508,7 @@ function Botones() {
                         <input
                           type="text"
                           className="form-control"
+                          placeholder="300 = $300.000"
                           value={formData.valor_prestamo}
                           onChange={(e) =>
                             setFormData({
@@ -477,6 +518,14 @@ function Botones() {
                           }
                           required
                         />
+                        {formData.valor_prestamo && (
+                          <small className="text-muted">
+                            = $
+                            {formatearMiles(
+                              convertirReal(formData.valor_prestamo),
+                            )}
+                          </small>
+                        )}
                       </div>
                     </div>
                     <div className="col-6">
@@ -485,15 +534,29 @@ function Botones() {
                         <input
                           type="text"
                           className="form-control"
+                          placeholder="350 = $350.000"
                           value={formData.tar_valor}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            const nuevoValor = e.target.value;
+                            const cuota = calcularCuota(
+                              nuevoValor,
+                              formData.tar_tiempo,
+                              formData.tar_fp,
+                            );
                             setFormData({
                               ...formData,
-                              tar_valor: e.target.value,
-                            })
-                          }
+                              tar_valor: nuevoValor,
+                              tar_cuota: cuota,
+                            });
+                          }}
                           required
                         />
+                        {formData.tar_valor && (
+                          <small className="text-muted">
+                            = $
+                            {formatearMiles(convertirReal(formData.tar_valor))}
+                          </small>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -539,6 +602,12 @@ function Botones() {
                           value={formData.tar_cuota}
                           readOnly
                         />
+                        {formData.tar_cuota && (
+                          <small className="text-muted">
+                            = $
+                            {formatearMiles(convertirReal(formData.tar_cuota))}
+                          </small>
+                        )}
                       </div>
                     </div>
                     <div className="col-6">

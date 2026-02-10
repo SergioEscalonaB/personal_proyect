@@ -281,9 +281,9 @@ function Botones() {
     <>
       {/* INPUTS DE ABONO (arriba de los botones) */}
       {mostrarInputsAbono && (
-        <div className="mb-3">
+        <div className="mb-1" style={{ marginTop: '-15px' }}>
           <form onSubmit={handleAbonoSubmit}>
-            <div className="row justify-content-center align-items-center">
+            <div className="row justify-content-center align-items-start">
               <div className="col-auto">
                 <label className="form-label text-muted small mb-1">
                   Abono x1000
@@ -344,7 +344,7 @@ function Botones() {
       )}
 
       {/* FILA 1 */}
-      <div className="d-flex gap-3 justify-content-center align-items-center mt-3">
+      <div className="d-flex gap-3 justify-content-center align-items-center mt-0">
         <button
           className="btn btn-outline-primary btn-sm"
           onClick={() => setShowModal(true)}
@@ -368,7 +368,7 @@ function Botones() {
       </div>
 
       {/* FILA 2 */}
-      <div className="d-flex gap-3 justify-content-center align-items-center mt-3">
+      <div className="d-flex gap-3 justify-content-center align-items-center mt-2">
         <button
           className="btn btn-outline-primary btn-sm"
           onClick={primero}

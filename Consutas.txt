@@ -289,4 +289,4 @@ LIMIT 1;
 DELETE FROM TARGETA WHERE CLI_CODIGO = '1010';
 DELETE FROM CLIENTES WHERE CLI_CODIGO = '1010';
 --------------------------------------------------
-
+// Obtener el historial de tarjetas de un cliente

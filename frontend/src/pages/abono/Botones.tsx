@@ -15,6 +15,8 @@ function Botones() {
     cargarTodosClientes,
     crearNuevaDescripcion,
     saldoRestante,
+    sumaCobro,
+    sumaPrestamo
   } = useAbono();
 
   const [showModal, setShowModal] = useState(false);
@@ -97,6 +99,10 @@ function Botones() {
         formData.tar_tiempo,
         formData.tar_fp,
       );
+
+      // Sumar el valor del préstamo al total del cobro
+      sumaPrestamo(parseFloat(convertirReal(formData.valor_prestamo)) || 0);
+
       setShowModal(false);
       setFormData({
         cli_codigo: "",
@@ -210,6 +216,8 @@ function Botones() {
         convertirReal(formAbono.des_abono),
         convertirReal(formAbono.des_resta),
       );
+      // Sumar el abono al total del cobro
+      sumaCobro(parseFloat(convertirReal(formAbono.des_abono)) || 0);
       // Limpiar los campos después de guardar
       setFormAbono({ des_abono: "", des_resta: "" });
       // Pasar al siguiente cliente automáticamente

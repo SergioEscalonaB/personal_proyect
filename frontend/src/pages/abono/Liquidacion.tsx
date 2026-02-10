@@ -2,7 +2,14 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useAbono } from "./AbonoContext";
 
 function Liquidacion() {
-  const {} = useAbono();
+  const { totalCobro, totalPrestamo } = useAbono();
+
+  // Convertir a formato mostrado (dividir entre 1000)
+  const formatearValor = (valor: number) => {
+    return (valor / 1000).toFixed(0);
+  };
+
+
 
   return (
     <div>
@@ -23,6 +30,7 @@ function Liquidacion() {
           <input
             type="text"
             className="form-control form-control-sm"
+            value={formatearValor(totalCobro)}
             placeholder=""
             style={{ fontSize: "0.85rem" }}
           />
@@ -37,6 +45,7 @@ function Liquidacion() {
           <input
             type="text"
             className="form-control form-control-sm"
+            value={formatearValor(totalPrestamo)}
             placeholder=""
             style={{ fontSize: "0.85rem" }}
           />

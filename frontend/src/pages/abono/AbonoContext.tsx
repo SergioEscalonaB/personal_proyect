@@ -47,6 +47,11 @@ type AbonoContextType = {
     des_abono: string,
     des_resta: string,
   ) => Promise<void>;
+  totalCobro: number;
+  totalPrestamo: number;
+  sumaCobro: (monto: number) => void;
+  sumaPrestamo: (monto: number) => void;
+  resetearTotales: () => void;
 };
 
 const AbonoContext = createContext<AbonoContextType | null>(null);
@@ -284,6 +289,24 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Estados para la liquidacion
+  const [totalCobro, setTotalCobro] = useState(0);
+  const [totalPrestamo, setTotalPrestamo] = useState(0);
+
+  const sumaCobro = (monto: number) => {
+    setTotalCobro((prev) => prev + monto);
+  };
+
+  const sumaPrestamo = (monto: number) => {
+    setTotalPrestamo((prev) => prev + monto);
+  };
+
+  // Función para resetear los totales (útil al cambiar de cobro)
+  const resetearTotales = () => {
+    setTotalCobro(0);
+    setTotalPrestamo(0);
+  };
+
   return (
     <AbonoContext.Provider
       value={{
@@ -303,6 +326,11 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         todosClientes,
         cargarTodosClientes,
         crearNuevaDescripcion,
+        totalCobro,
+        totalPrestamo,
+        sumaCobro,
+        sumaPrestamo,
+        resetearTotales,
       }}
     >
       {children}

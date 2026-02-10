@@ -3,7 +3,8 @@ import { useAbono } from "./AbonoContext";
 import { useState } from "react";
 
 function Liquidacion() {
-  const { totalCobro, totalPrestamo } = useAbono();
+  const { totalCobro, totalPrestamo, tarjetasCanceladas, tarjetasIngresadas } =
+    useAbono();
 
   const [gastos, setGastos] = useState(0);
   const [otrosGastos, setOtrosGastos] = useState(0);
@@ -56,7 +57,7 @@ function Liquidacion() {
   };
 
   return (
-    <div>
+    <div className="h-100 d-flex flex-column" style={{ overflow: "hidden" }}>
       {/* FILA 1 */}
       <div className="row g-0 mb-1">
         <div className="col-3">
@@ -122,7 +123,7 @@ function Liquidacion() {
           />
         </div>
         <div className="col-2">
-          <div className="fs-6 fw-bold">Otr Gastos</div>
+          <div className="fs-6 fw-bold text-center">Otr Gastos</div>
         </div>
         <div className="col-2">
           <input
@@ -186,7 +187,7 @@ function Liquidacion() {
           />
         </div>
         <div className="col-2">
-          <div className="fs-6 fw-bold">Diferencia</div>
+          <div className="fs-6 fw-bold text-center">Diferencia</div>
         </div>
         <div className="col-2">
           <input
@@ -197,6 +198,69 @@ function Liquidacion() {
             readOnly
             style={{ fontSize: "0.85rem" }}
           />
+        </div>
+      </div>
+      {/* FILA 8 - TARJETAS CANCELADAS E INGRESADAS */}
+      <div className="row g-1 mb-1 align-items-center mt-4">
+        <div className="col-4">
+          <div className="fs-6 fw-bold text-start">
+            TARJETAS CANCELADAS ({tarjetasCanceladas.length})
+          </div>
+        </div>
+        <div className="col-4">
+          <div className="fs-6 fw-bold text-end">
+            TARJETAS INGRESADAS ({tarjetasIngresadas.length})
+          </div>
+        </div>
+      </div>
+
+      {/* FILA 9 - DETALLE DE TARJETAS */}
+      <div
+        className="row g-2 mb-1 flex-grow-1"
+        style={{ minHeight: 0, overflow: "hidden" }}
+      >
+        <div className="col-4 h-100">
+          <div
+            className="border border-danger bg-danger-subtle p-2 text-start h-100"
+            style={{
+              overflowY: "auto",
+            }}
+          >
+            {tarjetasCanceladas.length === 0 ? (
+              <div className="text-center text-muted">--</div>
+            ) : (
+              <ul className="list-unstyled mb-0" style={{ fontSize: "0.9rem" }}>
+                {tarjetasCanceladas.map((tarjeta, index) => (
+                  <li key={index} className="mb-1">
+                    <strong>{tarjeta.nombre}</strong> → $
+                    {formatearValor(tarjeta.saldoCancelado)}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        <div className="col-4 h-100">
+          <div
+            className="border border-primary bg-primary-subtle p-2 text-start h-100"
+            style={{
+              overflowY: "auto",
+            }}
+          >
+            {tarjetasIngresadas.length === 0 ? (
+              <div className="text-center text-muted">--</div>
+            ) : (
+              <ul className="list-unstyled mb-0" style={{ fontSize: "0.9rem" }}>
+                {tarjetasIngresadas.map((tarjeta, index) => (
+                  <li key={index} className="mb-1">
+                    <strong>{tarjeta.nombre}</strong> → $
+                    {formatearValor(tarjeta.prestamo)}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </div>
     </div>

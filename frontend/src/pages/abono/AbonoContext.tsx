@@ -14,6 +14,8 @@ import type { Cobro } from "../../types/cobro";
 import type { TarjetaConSaldo } from "../../types/tarjetaconsaldo";
 import type { DescripcionTarjeta } from "../../types/descripciontarjeta";
 import type { SaldoRestante } from "../../types/saldorestante";
+import type { TarjetaIngresada } from "../../types/tarjetaingresada";
+import type { TarjetaCancelada } from "../../types/tarjetacancelada";
 
 type AbonoContextType = {
   rutas: Cobro[];
@@ -24,7 +26,12 @@ type AbonoContextType = {
   descripcion: DescripcionTarjeta[];
   saldoRestante: SaldoRestante | null;
   todosClientes: any[];
+  tarjetasCanceladas: TarjetaCancelada[];
+  tarjetasIngresadas: TarjetaIngresada[];
+  registrarTarjetaCancelada: (nombre: string, saldoCancelado: number) => void;
+  registrarTarjetaIngresada: (nombre: string, prestamo: number) => void;
   setCobroSeleccionado: (c: Cobro) => void;
+  resetearListas: () => void;
   siguiente: () => void;
   anterior: () => void;
   primero: () => void;
@@ -207,8 +214,10 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       const msg = error?.message ?? "";
       if (msg.startsWith("CLIENTE_YA_EXISTE")) {
-        const[, cob_codigo] = msg.split("|");
-        alert(`El cliente ya tiene una tarjeta activa en el cobro ${cob_codigo}.`);
+        const [, cob_codigo] = msg.split("|");
+        alert(
+          `El cliente ya tiene una tarjeta activa en el cobro ${cob_codigo}.`,
+        );
         return;
       }
       throw error;
@@ -307,6 +316,33 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     setTotalPrestamo(0);
   };
 
+  // Estado para el registro de tarjetas ingresadas y canceladas en la liquidación
+  const [tarjetasCanceladas, setTarjetasCanceladas] = useState<
+    TarjetaCancelada[]
+  >([]);
+  const [tarjetasIngresadas, setTarjetasIngresadas] = useState<
+    TarjetaIngresada[]
+  >([]);
+
+  // Función para registrar tarjeta cancelada
+  const registrarTarjetaCancelada = (
+    nombre: string,
+    saldoCancelado: number,
+  ) => {
+    setTarjetasCanceladas((prev) => [...prev, { nombre, saldoCancelado }]);
+  };
+
+  // Función para registrar tarjeta ingresada
+  const registrarTarjetaIngresada = (nombre: string, prestamo: number) => {
+    setTarjetasIngresadas((prev) => [...prev, { nombre, prestamo }]);
+  };
+
+  // Función para resetear listas (al cambiar de cobro)
+  const resetearListas = () => {
+    setTarjetasCanceladas([]);
+    setTarjetasIngresadas([]);
+  };
+
   return (
     <AbonoContext.Provider
       value={{
@@ -331,6 +367,11 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         sumaCobro,
         sumaPrestamo,
         resetearTotales,
+        tarjetasCanceladas,
+        tarjetasIngresadas,
+        registrarTarjetaCancelada,
+        registrarTarjetaIngresada,
+        resetearListas,
       }}
     >
       {children}

@@ -16,7 +16,9 @@ function Botones() {
     crearNuevaDescripcion,
     saldoRestante,
     sumaCobro,
-    sumaPrestamo
+    sumaPrestamo,
+    registrarTarjetaCancelada,
+    registrarTarjetaIngresada,
   } = useAbono();
 
   const [showModal, setShowModal] = useState(false);
@@ -101,7 +103,13 @@ function Botones() {
       );
 
       // Sumar el valor del préstamo al total del cobro
-      sumaPrestamo(parseFloat(convertirReal(formData.valor_prestamo)) || 0);
+      sumaPrestamo(parseFloat(convertirReal(formData.valor_prestamo)) || 0); //tambien simplificar esto de la conversion
+
+      //Registrar tarjeta ingresada
+      registrarTarjetaIngresada(
+        formData.cli_nombre,
+        parseFloat(convertirReal(formData.tar_valor)) || 0,
+      );
 
       setShowModal(false);
       setFormData({
@@ -217,7 +225,14 @@ function Botones() {
         convertirReal(formAbono.des_resta),
       );
       // Sumar el abono al total del cobro
-      sumaCobro(parseFloat(convertirReal(formAbono.des_abono)) || 0);
+      sumaCobro(parseFloat(convertirReal(formAbono.des_abono)) || 0); //Organizar esto para simplificar
+      // Si el saldo restante es 0, registrar tarjeta cancelada
+      if (parseFloat(convertirReal(formAbono.des_resta)) === 0 && cliente) {
+        registrarTarjetaCancelada(
+          cliente.CLI_NOMBRE,
+          parseFloat(convertirReal(formAbono.des_abono)) || 0,
+        );
+      }
       // Limpiar los campos después de guardar
       setFormAbono({ des_abono: "", des_resta: "" });
       // Pasar al siguiente cliente automáticamente
@@ -289,7 +304,7 @@ function Botones() {
     <>
       {/* INPUTS DE ABONO (arriba de los botones) */}
       {mostrarInputsAbono && (
-        <div className="mb-1" style={{ marginTop: '-15px' }}>
+        <div className="mb-1" style={{ marginTop: "-15px" }}>
           <form onSubmit={handleAbonoSubmit}>
             <div className="row justify-content-center align-items-start">
               <div className="col-auto">

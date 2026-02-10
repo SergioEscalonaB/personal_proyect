@@ -13,36 +13,36 @@ function AbonoPage() {
 
       {/* FILA 1 */}
       <div className="row g-2">
-        <div className="col-12 border p-3 text-center" style={{ height: '25vh' }}>
+        <div className="col-12 border p-3 text-center" style={{ height: '20vh' }}>
           <Selector />
         </div>
       </div>
 
       {/* FILA 2 */}
       <div className="row g-2">
-        <div className="col-2 border p-3 text-center" style={{ height: '50vh' }}>
+        <div className="col-2 border p-3 text-center" style={{ height: '55vh' }}>
           2
         </div>
-        <div className="col-5 border p-3 text-center" style={{ height: '50vh' }}>
+        <div className="col-5 border p-3 text-center" style={{ height: '55vh' }}>
           <Descripcion />
         </div>
-        <div className="col-5 border p-3 text-center" style={{ height: '50vh' }}>
+        <div className="col-5 border p-3" style={{ height: '55vh', overflow: 'hidden' }}>
           <Liquidacion />
         </div>
       </div>
 
       {/* FILA 3 */}
       <div className="row g-2">
-        <div className="col-2 border p-3 text-center" style={{ height: '20vh' }}>
+        <div className="col-2 border p-3 text-center" style={{ height: '23vh' }}>
           5
         </div>
-        <div className="col-5 border p-3 text-center" style={{ height: '20vh' }}>
+        <div className="col-5 border p-3 d-flex flex-column justify-content-center align-items-center" style={{ height: '23vh' }}>
           <Botones />
         </div>
-        <div className="col-3 border p-3 text-center" style={{ height: '20vh' }}>
+        <div className="col-3 border p-3 text-center" style={{ height: '23vh' }}>
           <Verificar />
         </div>
-        <div className="col-2 border p-3 text-center" style={{ height: '20vh' }}>
+        <div className="col-2 border p-3 text-center" style={{ height: '23vh' }}>
           8
         </div>
       </div>

@@ -59,9 +59,26 @@ type AbonoContextType = {
   sumaCobro: (monto: number) => void;
   sumaPrestamo: (monto: number) => void;
   resetearTotales: () => void;
+  cobroActivo: boolean;
+  iniciarCobro: () => void;
+  finalizarCobro: () => void;
+  gastos: number;
+  setGastos: (valor: number) => void;
+  otrosGastos: number;
+  setOtrosGastos: (valor: number) => void;
+  base: number;
+  setBase: (valor: number) => void;
+  descuento: number;
+  setDescuento: (valor: number) => void;
+  efectivo: number;
+  setEfectivo: (valor: number) => void;
+  cobroManual: number;
+  setCobroManual: (valor: number) => void;
+  prestamoManual: number;
+  setPrestamoManual: (valor: number) => void;
 };
 
-const AbonoContext = createContext<AbonoContextType | null>(null);
+const AbonoContext = createContext<AbonoContextType | undefined>(undefined);
 
 export function AbonoProvider({ children }: { children: React.ReactNode }) {
   // Obtener las rutas de cobro
@@ -299,8 +316,50 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Estados para la liquidacion
-  const [totalCobro, setTotalCobro] = useState(0);
-  const [totalPrestamo, setTotalPrestamo] = useState(0);
+  const [totalCobro, setTotalCobro] = useState<number>(() => {
+    const stored = localStorage.getItem("totalCobro");
+    return stored ? parseFloat(stored) : 0;
+  });
+
+  const [totalPrestamo, setTotalPrestamo] = useState<number>(() => {
+    const stored = localStorage.getItem("totalPrestamo");
+    return stored ? parseFloat(stored) : 0;
+  });
+
+  const [gastos, setGastos] = useState<number>(() => {
+    const stored = localStorage.getItem("gastos");
+    return stored ? parseFloat(stored) : 0;
+  });
+
+  const [otrosGastos, setOtrosGastos] = useState<number>(() => {
+    const stored = localStorage.getItem("otrosGastos");
+    return stored ? parseFloat(stored) : 0;
+  });
+
+  const [base, setBase] = useState<number>(() => {
+    const stored = localStorage.getItem("base");
+    return stored ? parseFloat(stored) : 0;
+  });
+
+  const [descuento, setDescuento] = useState<number>(() => {
+    const stored = localStorage.getItem("descuento");
+    return stored ? parseFloat(stored) : 0;
+  });
+
+  const [efectivo, setEfectivo] = useState<number>(() => {
+    const stored = localStorage.getItem("efectivo");
+    return stored ? parseFloat(stored) : 0;
+  });
+
+  const [cobroManual, setCobroManual] = useState<number>(() => {
+    const stored = localStorage.getItem("cobroManual");
+    return stored ? parseFloat(stored) : 0;
+  });
+
+  const [prestamoManual, setPrestamoManual] = useState<number>(() => {
+    const stored = localStorage.getItem("prestamoManual");
+    return stored ? parseFloat(stored) : 0;
+  });
 
   const sumaCobro = (monto: number) => {
     setTotalCobro((prev) => prev + monto);
@@ -314,15 +373,29 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
   const resetearTotales = () => {
     setTotalCobro(0);
     setTotalPrestamo(0);
+    setGastos(0);
+    setOtrosGastos(0);
+    setBase(0);
+    setDescuento(0);
+    setEfectivo(0);
+    setCobroManual(0);
+    setPrestamoManual(0);
   };
 
   // Estado para el registro de tarjetas ingresadas y canceladas en la liquidación
   const [tarjetasCanceladas, setTarjetasCanceladas] = useState<
     TarjetaCancelada[]
-  >([]);
+  >(() => {
+    const stored = localStorage.getItem("tarjetasCanceladas");
+    return stored ? JSON.parse(stored) : [];
+  });
+
   const [tarjetasIngresadas, setTarjetasIngresadas] = useState<
     TarjetaIngresada[]
-  >([]);
+  >(() => {
+    const stored = localStorage.getItem("tarjetasIngresadas");
+    return stored ? JSON.parse(stored) : [];
+  });
 
   // Función para registrar tarjeta cancelada
   const registrarTarjetaCancelada = (
@@ -342,6 +415,80 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     setTarjetasCanceladas([]);
     setTarjetasIngresadas([]);
   };
+
+  // Estado para controlar si el cobro esta activo
+  const [cobroActivo, setCobroActivo] = useState<boolean>(() => {
+    // Recuperar del localStorage al cargar el componente
+    const stored = localStorage.getItem("cobroActivo");
+    return stored === "true";
+  });
+
+  // Guardar en localStorage cada vez que cambie el estado
+  useEffect(() => {
+    localStorage.setItem("cobroActivo", cobroActivo.toString());
+  }, [cobroActivo]);
+
+  // Función para iniciar el cobro
+  const iniciarCobro = () => {
+    setCobroActivo(true);
+  };
+
+  const finalizarCobro = () => {
+    //Resetear todo los totales y listas
+    resetearTotales();
+    resetearListas();
+    setCobroActivo(false);
+
+    // Limpiar el localStorage
+    localStorage.removeItem("cobroActivo");
+    localStorage.removeItem("totalCobro");
+    localStorage.removeItem("totalPrestamo");
+    localStorage.removeItem("gastos");
+    localStorage.removeItem("otrosGastos");
+    localStorage.removeItem("base");
+    localStorage.removeItem("descuento");
+    localStorage.removeItem("efectivo");
+    localStorage.removeItem("cobroManual");
+    localStorage.removeItem("prestamoManual");
+    localStorage.removeItem("tarjetasCanceladas");
+    localStorage.removeItem("tarjetasIngresadas");
+  };
+
+  // Persistir totales y listas en localStorage
+  useEffect(() => {
+    if (cobroActivo) {
+      localStorage.setItem("totalCobro", totalCobro.toString());
+      localStorage.setItem("totalPrestamo", totalPrestamo.toString());
+      localStorage.setItem("gastos", gastos.toString());
+      localStorage.setItem("otrosGastos", otrosGastos.toString());
+      localStorage.setItem("base", base.toString());
+      localStorage.setItem("descuento", descuento.toString());
+      localStorage.setItem("efectivo", efectivo.toString());
+      localStorage.setItem("cobroManual", cobroManual.toString());
+      localStorage.setItem("prestamoManual", prestamoManual.toString());
+      localStorage.setItem(
+        "tarjetasCanceladas",
+        JSON.stringify(tarjetasCanceladas),
+      );
+      localStorage.setItem(
+        "tarjetasIngresadas",
+        JSON.stringify(tarjetasIngresadas),
+      );
+    }
+  }, [
+    cobroActivo,
+    totalCobro,
+    totalPrestamo,
+    gastos,
+    otrosGastos,
+    base,
+    descuento,
+    efectivo,
+    cobroManual,
+    prestamoManual,
+    tarjetasCanceladas,
+    tarjetasIngresadas,
+  ]);
 
   return (
     <AbonoContext.Provider
@@ -372,6 +519,23 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         registrarTarjetaCancelada,
         registrarTarjetaIngresada,
         resetearListas,
+        cobroActivo,
+        iniciarCobro,
+        finalizarCobro,
+        gastos,
+        setGastos,
+        otrosGastos,
+        setOtrosGastos,
+        base,
+        setBase,
+        descuento,
+        setDescuento,
+        efectivo,
+        setEfectivo,
+        cobroManual,
+        setCobroManual,
+        prestamoManual,
+        setPrestamoManual,
       }}
     >
       {children}

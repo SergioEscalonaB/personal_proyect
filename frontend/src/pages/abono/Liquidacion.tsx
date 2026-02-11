@@ -1,20 +1,28 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useAbono } from "./AbonoContext";
-import { useState } from "react";
 
 function Liquidacion() {
-  const { totalCobro, totalPrestamo, tarjetasCanceladas, tarjetasIngresadas } =
-    useAbono();
-
-  const [gastos, setGastos] = useState(0);
-  const [otrosGastos, setOtrosGastos] = useState(0);
-  const [base, setBase] = useState(0);
-  const [descuento, setDescuento] = useState(0);
-  const [efectivo, setEfectivo] = useState(0);
-
-  // Estados locales para cobro y prestamo editables
-  const [cobroManual, setCobroManual] = useState(0);
-  const [prestamoManual, setPrestamoManual] = useState(0);
+  const {
+    totalCobro,
+    totalPrestamo,
+    tarjetasCanceladas,
+    tarjetasIngresadas,
+    cobroActivo,
+    gastos,
+    setGastos,
+    otrosGastos,
+    setOtrosGastos,
+    base,
+    setBase,
+    descuento,
+    setDescuento,
+    efectivo,
+    setEfectivo,
+    cobroManual,
+    setCobroManual,
+    prestamoManual,
+    setPrestamoManual,
+  } = useAbono();
 
   // Convertir a formato mostrado (dividir entre 1000)
   const formatearValor = (valor: number) => {
@@ -82,6 +90,7 @@ function Liquidacion() {
               const nuevoTotal = convertirAReal(e.target.value);
               setCobroManual(nuevoTotal - totalCobro);
             }}
+            disabled={!cobroActivo}
             style={{ fontSize: "0.85rem" }}
           />
         </div>
@@ -102,6 +111,7 @@ function Liquidacion() {
               const nuevoTotal = convertirAReal(e.target.value);
               setPrestamoManual(nuevoTotal - totalPrestamo);
             }}
+            disabled={!cobroActivo}
             style={{ fontSize: "0.85rem" }}
           />
         </div>
@@ -119,6 +129,7 @@ function Liquidacion() {
             placeholder=""
             value={gastos === 0 ? "" : formatearValor(gastos)}
             onChange={(e) => setGastos(convertirAReal(e.target.value))}
+            disabled={!cobroActivo}
             style={{ fontSize: "0.85rem" }}
           />
         </div>
@@ -132,6 +143,7 @@ function Liquidacion() {
             placeholder=""
             value={otrosGastos === 0 ? "" : formatearValor(otrosGastos)}
             onChange={(e) => setOtrosGastos(convertirAReal(e.target.value))}
+            disabled={!cobroActivo}
             style={{ fontSize: "0.85rem" }}
           />
         </div>
@@ -149,6 +161,7 @@ function Liquidacion() {
             placeholder=""
             value={base === 0 ? "" : formatearValor(base)}
             onChange={(e) => setBase(convertirAReal(e.target.value))}
+            disabled={!cobroActivo}
             style={{ fontSize: "0.85rem" }}
           />
         </div>
@@ -166,6 +179,7 @@ function Liquidacion() {
             placeholder=""
             value={descuento === 0 ? "" : formatearValor(descuento)}
             onChange={(e) => setDescuento(convertirAReal(e.target.value))}
+            disabled={!cobroActivo}
             style={{ fontSize: "0.85rem" }}
           />
         </div>
@@ -183,6 +197,7 @@ function Liquidacion() {
             placeholder=""
             value={efectivo === 0 ? "" : formatearValor(efectivo)}
             onChange={(e) => setEfectivo(convertirAReal(e.target.value))}
+            disabled={!cobroActivo}
             style={{ fontSize: "0.85rem" }}
           />
         </div>

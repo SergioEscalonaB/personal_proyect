@@ -19,6 +19,7 @@ function Botones() {
     sumaPrestamo,
     registrarTarjetaCancelada,
     registrarTarjetaIngresada,
+    cobroActivo,
   } = useAbono();
 
   const [showModal, setShowModal] = useState(false);
@@ -303,7 +304,7 @@ function Botones() {
   return (
     <>
       {/* INPUTS DE ABONO (arriba de los botones) */}
-      {mostrarInputsAbono && (
+      {mostrarInputsAbono && cobroActivo && (
         <div className="mb-1" style={{ marginTop: "-15px" }}>
           <form onSubmit={handleAbonoSubmit}>
             <div className="row justify-content-center align-items-start">
@@ -371,6 +372,7 @@ function Botones() {
         <button
           className="btn btn-outline-primary btn-sm"
           onClick={() => setShowModal(true)}
+          disabled={!cobroActivo}
         >
           Nuevo Cliente
         </button>
@@ -384,7 +386,7 @@ function Botones() {
         <button
           className="btn btn-outline-primary btn-sm"
           onClick={() => setMostrarInputsAbono(!mostrarInputsAbono)}
-          disabled={!cliente}
+          disabled={!cliente || !cobroActivo}
         >
           {mostrarInputsAbono ? "Cerrar Abono" : "Abrir Abono"}
         </button>

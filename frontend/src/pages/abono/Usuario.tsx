@@ -8,6 +8,7 @@ function Selector() {
     setCobroSeleccionado,
     cliente,
     saldoRestante,
+    cobroActivo
   } = useAbono();
 
   return (
@@ -34,6 +35,7 @@ function Selector() {
                   <button
                     className="dropdown-item"
                     onClick={() => setCobroSeleccionado(ruta)}
+                    disabled={!cobroActivo}
                   >
                     {ruta.COB_CODIGO}
                   </button>

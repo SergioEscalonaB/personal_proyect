@@ -5,6 +5,7 @@ import Botones from './pages/abono/Botones.tsx'
 import Descripcion from './pages/abono/Descripcion.tsx'
 import Verificar from './pages/abono/verificar.tsx'
 import Liquidacion from './pages/abono/Liquidacion.tsx'
+import IniciarSalir from './pages/abono/iniciar-salir.tsx'
 
 function AbonoPage() {
   return (
@@ -43,7 +44,7 @@ function AbonoPage() {
           <Verificar />
         </div>
         <div className="col-2 border p-3 text-center" style={{ height: '23vh' }}>
-          8
+          <IniciarSalir />
         </div>
       </div>
 

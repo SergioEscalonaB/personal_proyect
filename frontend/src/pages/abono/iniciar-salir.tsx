@@ -2,7 +2,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useAbono } from "./AbonoContext";
 
 export default function IniciarSalir() {
-  const { cobroActivo, iniciarCobro, finalizarCobro } = useAbono();
+  const { cobroActivo, iniciarCobro, finalizarCobro} = useAbono();
 
   const handleFinalizarCobro = () => {
     const confirmacion = window.confirm(

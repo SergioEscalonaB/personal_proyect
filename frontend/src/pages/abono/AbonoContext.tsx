@@ -1,5 +1,5 @@
 // context/AbonoContext.tsx
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import {
   getDescripcionTarjeta,
   getRutas,
@@ -87,31 +87,59 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     getRutas().then(setRutas);
   }, []);
 
-  // Cobro seleccionado y carga de tarjetas
-  const [cobroSeleccionado, setCobroSeleccionadoState] = useState<Cobro | null>(
-    null,
-  );
-  useEffect(() => {
-    if (cobroSeleccionado) {
-      cargarTarjeta(cobroSeleccionado.COB_CODIGO, 0);
-    }
-  }, [cobroSeleccionado]);
-
-  // Estado para la navegacion de tarjetas
-  const [offset, setOffset] = useState(0);
+  // Estado para la navegacion de tarjetas (con persistencia) - debe ir antes del useEffect
+  const [offset, setOffset] = useState(() => {
+    const stored = localStorage.getItem("offset");
+    return stored ? parseInt(stored, 10) : 0;
+  });
   const [cliente, setCliente] = useState<TarjetaConSaldo | null>(null);
   const cargarTarjeta = async (codigo: string, nuevoOffset: number) => {
     const data = await getTarjetasconSaldo(codigo, nuevoOffset);
     if (data.length > 0) {
       setCliente(data[0]);
       setOffset(nuevoOffset);
+      // Persistir el offset actual
+      localStorage.setItem("offset", nuevoOffset.toString());
     }
   };
+
+  // Cobro seleccionado y carga de tarjetas (con persistencia)
+  const [cobroSeleccionado, setCobroSeleccionadoState] = useState<Cobro | null>(
+    () => {
+      const stored = localStorage.getItem("cobroSeleccionado");
+      return stored ? JSON.parse(stored) : null;
+    },
+  );
+  
+  // Ref para guardar el código del cobro anterior y detectar cambios reales
+  const prevCobroCodigoRef = useRef<string | null>(null);
+  
+  useEffect(() => {
+    if (cobroSeleccionado) {
+      const cobroActualCodigo = cobroSeleccionado.COB_CODIGO;
+      
+      // Verificar si el cobro realmente cambió o es la carga inicial
+      if (prevCobroCodigoRef.current === null) {
+        // Carga inicial: usar el offset restaurado de localStorage
+        const storedOffset = localStorage.getItem("offset");
+        const initialOffset = storedOffset ? parseInt(storedOffset, 10) : 0;
+        cargarTarjeta(cobroActualCodigo, initialOffset);
+      } else if (prevCobroCodigoRef.current !== cobroActualCodigo) {
+        // El cobro cambió: empezar desde 0
+        cargarTarjeta(cobroActualCodigo, 0);
+      }
+      
+      prevCobroCodigoRef.current = cobroActualCodigo;
+    }
+  }, [cobroSeleccionado]);
 
   // Función para seleccionar un cobro y reiniciar el offset
   const setCobroSeleccionado = (c: Cobro) => {
     setOffset(0);
     setCobroSeleccionadoState(c);
+    // Persistir el cobro seleccionado y resetear offset
+    localStorage.setItem("cobroSeleccionado", JSON.stringify(c));
+    localStorage.setItem("offset", "0");
   };
 
   //Conteo de todos los clientes activos con saldo y tarjeta
@@ -452,6 +480,8 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("prestamoManual");
     localStorage.removeItem("tarjetasCanceladas");
     localStorage.removeItem("tarjetasIngresadas");
+    localStorage.removeItem("cobroSeleccionado");
+    localStorage.removeItem("offset");
   };
 
   // Persistir totales y listas en localStorage

@@ -23,6 +23,7 @@ function Selector() {
               className="btn btn-secondary btn-sm dropdown-toggle"
               type="button"
               data-bs-toggle="dropdown"
+              disabled={cobroActivo}
             >
               {cobroSeleccionado
                 ? cobroSeleccionado.COB_CODIGO
@@ -35,7 +36,7 @@ function Selector() {
                   <button
                     className="dropdown-item"
                     onClick={() => setCobroSeleccionado(ruta)}
-                    disabled={!cobroActivo}
+                    disabled={cobroActivo}
                   >
                     {ruta.COB_CODIGO}
                   </button>

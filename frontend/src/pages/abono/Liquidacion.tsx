@@ -76,9 +76,9 @@ function Liquidacion() {
       </div>
 
       {/* FILA 2 - COBRO */}
-      <div className="row g-0 mb-1 align-items-center">
-        <div className="col-3">
-          <div className="fs-6 fw-bold">COBRO</div>
+      <div className="row g-0 mb-1 align-items-center" >
+        <div className="col-2">
+          <div className="small fw-bold">COBRO</div>
         </div>
         <div className="col-2">
           <input
@@ -98,8 +98,8 @@ function Liquidacion() {
 
       {/* FILA 3 - PRESTAMO */}
       <div className="row g-0 mb-1 align-items-center">
-        <div className="col-3">
-          <div className="fs-6 fw-bold">- PRESTAMO</div>
+        <div className="col-2">
+          <div className="small fw-bold">- PRESTAMO</div>
         </div>
         <div className="col-2">
           <input
@@ -119,8 +119,8 @@ function Liquidacion() {
 
       {/* FILA 4 - GASTOS */}
       <div className="row g-0 mb-1 align-items-center">
-        <div className="col-3">
-          <div className="fs-6 fw-bold">- GASTOS</div>
+        <div className="col-2">
+          <div className="small fw-bold">- GASTOS</div>
         </div>
         <div className="col-2">
           <input
@@ -134,7 +134,7 @@ function Liquidacion() {
           />
         </div>
         <div className="col-2">
-          <div className="fs-6 fw-bold text-center">Otr Gastos</div>
+          <div className="small fw-bold text-center">Otr Gastos</div>
         </div>
         <div className="col-2">
           <input
@@ -151,8 +151,8 @@ function Liquidacion() {
 
       {/* FILA 5 - BASE */}
       <div className="row g-0 mb-1 align-items-center">
-        <div className="col-3">
-          <div className="fs-6 fw-bold">+ BASE</div>
+        <div className="col-2">
+          <div className="small fw-bold">+ BASE</div>
         </div>
         <div className="col-2">
           <input
@@ -169,8 +169,8 @@ function Liquidacion() {
 
       {/* FILA 6 - DESCUENTO */}
       <div className="row g-0 mb-1 align-items-center">
-        <div className="col-3">
-          <div className="fs-6 fw-bold">- DESCUENTO</div>
+        <div className="col-2">
+          <div className="small fw-bold">- DESCUENTO</div>
         </div>
         <div className="col-2">
           <input
@@ -187,8 +187,8 @@ function Liquidacion() {
 
       {/* FILA 7 - EFECTIVO Y DIFERENCIA */}
       <div className="row g-0 mb-1 align-items-center">
-        <div className="col-3">
-          <div className="fs-6 fw-bold">Efectivo</div>
+        <div className="col-2">
+          <div className="small fw-bold">Efectivo</div>
         </div>
         <div className="col-2">
           <input
@@ -202,7 +202,7 @@ function Liquidacion() {
           />
         </div>
         <div className="col-2">
-          <div className="fs-6 fw-bold text-center">Diferencia</div>
+          <div className="small fw-bold text-center">Diferencia</div>
         </div>
         <div className="col-2">
           <input
@@ -216,14 +216,14 @@ function Liquidacion() {
         </div>
       </div>
       {/* FILA 8 - TARJETAS CANCELADAS E INGRESADAS */}
-      <div className="row g-1 mb-1 align-items-center mt-4">
+      <div className="row g-1 mb-1 align-items-center mt-2">
         <div className="col-4">
-          <div className="fs-6 fw-bold text-start">
+          <div className="small fw-bold text-start">
             TARJETAS CANCELADAS ({tarjetasCanceladas.length})
           </div>
         </div>
         <div className="col-4">
-          <div className="fs-6 fw-bold text-end">
+          <div className="small fw-bold text-end">
             TARJETAS INGRESADAS ({tarjetasIngresadas.length})
           </div>
         </div>

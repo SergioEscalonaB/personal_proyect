@@ -148,3 +148,36 @@ export async function crearDescripcionAbono(
 
   return json.data;
 }
+
+// Crear el nuevo reporte del cobro
+export async function crearReporteCobro(
+  cob_codigo: string,
+  fecha: string,
+  cobro: string,
+  prestamo: string,
+  utilidad: string,
+  gastos: string,
+  efectivo: string,
+  base: string)
+  : Promise<any> {
+  const res = await fetch(`${API_URL}/abonopage/reporte/crear`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      cob_codigo,
+      fecha,
+      cobro,
+      prestamo,
+      utilidad,
+      gastos,
+      efectivo,
+      base
+    }),
+  });
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.error || "ERROR_DESCONOCIDO");
+  }
+}

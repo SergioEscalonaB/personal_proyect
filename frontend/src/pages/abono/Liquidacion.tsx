@@ -65,19 +65,37 @@ function Liquidacion() {
     return diff > 0 ? "text-success" : "text-danger";
   };
 
+  // Obtener fecha de hoy
+  const obtenerFechaHoy = () => {
+    const hoy = new Date();
+    return hoy.toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  // Función para guardar reporte
+  const guardarReporte = () => {
+    // Aquí va la lógica para guardar el reporte
+    console.log("Guardando reporte...");
+  };
+
   return (
     <div className="h-100 d-flex flex-column" style={{ overflow: "hidden" }}>
       {/* FILA 1 */}
       <div className="row g-0 mb-1">
         <div className="col-3">
           <div className="d-flex-center border border-primary bg-primary-subtle rounded ">
-            <div className="fs-6 fw-bold flex-shrink-0 center">Utilidad: {formatearValor(utilidadCobro)}</div>
+            <div className="fs-6 fw-bold flex-shrink-0 text-center">
+              Utilidad: {formatearValor(utilidadCobro)}
+            </div>
           </div>
         </div>
       </div>
 
       {/* FILA 2 - COBRO */}
-      <div className="row g-0 mb-1 align-items-center" >
+      <div className="row g-0 mb-1 align-items-center">
         <div className="col-2">
           <div className="small fw-bold">COBRO</div>
         </div>
@@ -119,7 +137,7 @@ function Liquidacion() {
       </div>
 
       {/* FILA 4 - GASTOS */}
-      <div className="row g-0 mb-1 align-items-center">
+      <div className="row g-0 mb-1 align-items-center position-relative">
         <div className="col-2">
           <div className="small fw-bold">- GASTOS</div>
         </div>
@@ -148,8 +166,29 @@ function Liquidacion() {
             style={{ fontSize: "0.85rem" }}
           />
         </div>
+        {/* COLUMNA LATERAL - REPORTE - 4 */}
+        <div className="col-4 d-flex flex-column justify-content-center align-items-center position-absolute end-0">
+          <div className="border border-secondary bg-light p-3 rounded mb-3 text-center" style={{ height: "100%" }}>
+            <div className="fw-bold mb-2" style={{ fontSize: "1rem" }}>
+              REPORTE
+            </div>
+            <div className="text-danger fw-bold mb-2" style={{ fontSize: "0.9rem" }}>
+              No Guardado
+            </div>
+            <div className="text" style={{ fontSize: "0.85rem" }}>
+              {obtenerFechaHoy()}
+            </div>
+            <button
+            className=" mt-2 btn btn-primary w-60"
+            onClick={guardarReporte}
+            disabled={!cobroActivo}
+          >
+            Guardar
+          </button>
+          </div>
+          
+        </div>
       </div>
-
       {/* FILA 5 - BASE */}
       <div className="row g-0 mb-1 align-items-center">
         <div className="col-2">
@@ -218,13 +257,13 @@ function Liquidacion() {
       </div>
       {/* FILA 8 - TARJETAS CANCELADAS E INGRESADAS */}
       <div className="row g-1 mb-1 align-items-center mt-2">
-        <div className="col-4">
-          <div className="small fw-bold text-start">
+        <div className="col-5">
+          <div className="small fw-bold text-center">
             TARJETAS CANCELADAS ({tarjetasCanceladas.length})
           </div>
         </div>
-        <div className="col-4">
-          <div className="small fw-bold text-end">
+        <div className="col-5">
+          <div className="small fw-bold text-center">
             TARJETAS INGRESADAS ({tarjetasIngresadas.length})
           </div>
         </div>
@@ -235,7 +274,7 @@ function Liquidacion() {
         className="row g-2 mb-1 flex-grow-1"
         style={{ minHeight: 0, overflow: "hidden" }}
       >
-        <div className="col-4 h-100">
+        <div className="col-5 h-100">
           <div
             className="border border-danger bg-danger-subtle p-2 text-start h-100"
             style={{
@@ -257,7 +296,7 @@ function Liquidacion() {
           </div>
         </div>
 
-        <div className="col-4 h-100">
+        <div className="col-5 h-100">
           <div
             className="border border-primary bg-primary-subtle p-2 text-start h-100"
             style={{

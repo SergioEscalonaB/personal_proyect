@@ -8,7 +8,7 @@ import {
   getSaldoRestante,
   crearClienteNuevo,
   crearDescripcionAbono,
-  reorganizarCobro,
+  crearReporteCobro,
 } from "../controllers/abonopage.controller";
 
 const router = express.Router();
@@ -37,7 +37,7 @@ router.post("/cliente/nuevo", crearClienteNuevo);
 // Creando la descripcion de los abonos
 router.post("/descripcion/crear", crearDescripcionAbono);
 
-// Reorganizar el orden de los cobros
-router.post("/reorganizar", reorganizarCobro);
+// Crear el nuevo reporte del cobro al finalizar
+router.post("/reporte/crear", crearReporteCobro);
 
 export default router;

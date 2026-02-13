@@ -351,51 +351,28 @@ export const crearDescripcionAbonoSQL = async (
   ]);
 };
 
-// Reorganizar cobro: solo para casos donde quedaron tarjetas sin marcar
-// (normalmente ya está todo organizado por crearDescripcionAbonoSQL)
-export const reorganizarCobroSQL = async (cob_codigo: string) => {
+// Crear el nuevo reporte del cobro al finalizar
+export const crearReporteCobroSQL = async (
+  cob_codigo: string,
+  fecha: string,
+  cobro: string,
+  prestamo: string,
+  utilidad: string,
+  gastos: string,
+  efectivo: string,
+  base: string,
+) => {
   try {
-    return await prisma.$transaction([
-      // Paso 1: Marcar como INACTIVAS cualquier tarjeta que quedó pendiente con DES_RESTA = 0
-      prisma.$executeRaw`
-        UPDATE TARGETA
-        SET ESTADO = 'INACTIVA', ITEN = NULL
-        WHERE TAR_CODIGO IN (
-          SELECT T.TAR_CODIGO
-          FROM TARGETA T
-          INNER JOIN CLIENTES C ON T.CLI_CODIGO = C.CLI_CODIGO
-          LEFT JOIN (
-            SELECT TAR_CODIGO, DES_RESTA
-            FROM (
-              SELECT 
-                TAR_CODIGO,
-                DES_RESTA,
-                ROW_NUMBER() OVER (PARTITION BY TAR_CODIGO ORDER BY DES_FECHA DESC) AS rn
-              FROM DESCRIPCION
-            ) X
-            WHERE rn = 1 AND DES_RESTA = 0
-          ) D ON T.TAR_CODIGO = D.TAR_CODIGO
-          WHERE C.COB_CODIGO = ${cob_codigo}
-            AND T.ESTADO = 'ACTIVA'
-            AND D.TAR_CODIGO IS NOT NULL
-        )
-      `,
-
-      // Paso 2: Marcar clientes como INACTIVOS
-      prisma.$executeRaw`
-        UPDATE CLIENTES
-        SET ESTADO = 'INACTIVO'
-        WHERE CLI_CODIGO IN (
-          SELECT T.CLI_CODIGO
-          FROM TARGETA T
-          INNER JOIN CLIENTES C ON T.CLI_CODIGO = C.CLI_CODIGO
-          WHERE T.ESTADO = 'INACTIVA'
-            AND C.COB_CODIGO = ${cob_codigo}
-            AND C.ESTADO = 'ACTIVO'
-        )
-      `,
-    ]);
+    const reporte = await prisma.$queryRaw<any[]>`
+    INSERT INTO LISTADO (CODCOB, FECHA, COBRO, PRESTAMO, UTILIDAD, GASTOS, EFECTIVO, BASE)
+    VALUES (
+      ${cob_codigo}, ${fecha}, ${cobro}, ${prestamo}, ${utilidad}, ${gastos}, ${efectivo}, ${base}
+    )
+    `;
   } catch (error) {
-    throw new Error(`Error al reorganizar cobro: ${error}`);
+    throw new Error(`Error al enviar reporte de cobro: ${error}`);
   }
 };
+
+// Reorganizar cobro: solo para casos donde quedaron tarjetas sin marcar
+// (normalmente ya está todo organizado por crearDescripcionAbonoSQL)

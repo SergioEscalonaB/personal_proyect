@@ -17,6 +17,7 @@ function Botones() {
     saldoRestante,
     sumaCobro,
     sumaPrestamo,
+    sumaUtilidadCobro,
     registrarTarjetaCancelada,
     registrarTarjetaIngresada,
     cobroActivo,
@@ -101,6 +102,8 @@ function Botones() {
         formData.tar_iten,
         formData.tar_tiempo,
         formData.tar_fp,
+        convertirReal(formData.valor_prestamo),
+        convertirReal((parseFloat(formData.tar_valor) - parseFloat(formData.valor_prestamo)).toString())
       );
 
       // Sumar el valor del préstamo al total del cobro
@@ -221,12 +224,20 @@ function Botones() {
     abonoEnprocesoRef.current = true;
 
     try {
+      const valorTarjeta = parseFloat(cliente?.TAR_VALOR || "0") || 0;
+      const utilidadTarjeta = parseFloat(cliente?.UTILIDAD || "0") || 0;
+      const abonoReal = parseFloat(convertirReal(formAbono.des_abono)) || 0;
+      const utilidadCobro =
+        valorTarjeta > 0 ? (abonoReal / valorTarjeta) * utilidadTarjeta : 0;
+
       await crearNuevaDescripcion(
         convertirReal(formAbono.des_abono),
         convertirReal(formAbono.des_resta),
       );
       // Sumar el abono al total del cobro
       sumaCobro(parseFloat(convertirReal(formAbono.des_abono)) || 0); //Organizar esto para simplificar
+      // Sumar la utilidad del abono
+      sumaUtilidadCobro(utilidadCobro);
       // Si el saldo restante es 0, registrar tarjeta cancelada
       if (parseFloat(convertirReal(formAbono.des_resta)) === 0 && cliente) {
         registrarTarjetaCancelada(
@@ -689,7 +700,7 @@ function Botones() {
                   </div>
                   {/* FILA 6 */}
                   <div className="mb-3">
-                    <label className="form-label">
+                    <label className="form-label justify-content-around d-flex">
                       Posición: {formData.tar_iten || "-"}{" "}
                       {/* ITEN Quitar eso al final */}
                     </label>

@@ -8,6 +8,7 @@ function Liquidacion() {
     tarjetasCanceladas,
     tarjetasIngresadas,
     cobroActivo,
+    utilidadCobro,
     gastos,
     setGastos,
     otrosGastos,
@@ -69,8 +70,8 @@ function Liquidacion() {
       {/* FILA 1 */}
       <div className="row g-0 mb-1">
         <div className="col-3">
-          <div className="d-flex-center border border-primary bg-warning rounded ">
-            <div className="fs-6 flex-shrink-0">--</div>
+          <div className="d-flex-center border border-primary bg-primary-subtle rounded ">
+            <div className="fs-6 fw-bold flex-shrink-0 center">Utilidad: {formatearValor(utilidadCobro)}</div>
           </div>
         </div>
       </div>

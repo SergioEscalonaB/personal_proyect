@@ -1,4 +1,3 @@
-// context/AbonoContext.tsx
 import { createContext, useContext, useState, useEffect, useRef } from "react";
 import {
   getDescripcionTarjeta,
@@ -47,6 +46,8 @@ type AbonoContextType = {
     tar_iten: string,
     tar_tiempo: string,
     tar_fp: string,
+    tar_pres: string,
+    tar_utilidad: string,
   ) => void;
   ConteoTarjetas?: () => void;
   cargarTodosClientes: (cob_codigo: string) => void;
@@ -56,8 +57,10 @@ type AbonoContextType = {
   ) => Promise<void>;
   totalCobro: number;
   totalPrestamo: number;
+  utilidadCobro: number;
   sumaCobro: (monto: number) => void;
   sumaPrestamo: (monto: number) => void;
+  sumaUtilidadCobro: (monto: number) => void;
   resetearTotales: () => void;
   cobroActivo: boolean;
   iniciarCobro: () => void;
@@ -224,6 +227,8 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     tar_iten: string,
     tar_tiempo: string,
     tar_fp: string,
+    tar_pres: string,
+    tar_utilidad: string,
   ) => {
     try {
       await crearClienteConTarjeta(
@@ -237,14 +242,14 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         tar_iten,
         tar_tiempo,
         tar_fp,
+        tar_pres,
+        tar_utilidad,
       );
       const contartarjetas = await getTotalTarjetas(
         cobroSeleccionado ? cobroSeleccionado.COB_CODIGO : cob_codigo,
       );
       setTotal(contartarjetas);
 
-      //Darle tiempo al backend para procesar la creación del cliente y su tarjeta antes de recargar
-      //await new Promise((resolve) => setTimeout(resolve, 500));
       // Recargar en la posicion del nuevo cliente
       if (cobroSeleccionado && cliente) {
         const itenActual = parseFloat(cliente.ITEN);
@@ -354,6 +359,11 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     return stored ? parseFloat(stored) : 0;
   });
 
+  const [utilidadCobro, setUtilidadCobro] = useState<number>(() => {
+    const stored = localStorage.getItem("utilidadCobro");
+    return stored ? parseFloat(stored) : 0;
+  });
+
   const [gastos, setGastos] = useState<number>(() => {
     const stored = localStorage.getItem("gastos");
     return stored ? parseFloat(stored) : 0;
@@ -397,10 +407,15 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     setTotalPrestamo((prev) => prev + monto);
   };
 
+  const sumaUtilidadCobro = (monto: number) => {
+    setUtilidadCobro((prev) => prev + monto);
+  };
+
   // Función para resetear los totales (útil al cambiar de cobro)
   const resetearTotales = () => {
     setTotalCobro(0);
     setTotalPrestamo(0);
+    setUtilidadCobro(0);
     setGastos(0);
     setOtrosGastos(0);
     setBase(0);
@@ -471,6 +486,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("cobroActivo");
     localStorage.removeItem("totalCobro");
     localStorage.removeItem("totalPrestamo");
+    localStorage.removeItem("utilidadCobro");
     localStorage.removeItem("gastos");
     localStorage.removeItem("otrosGastos");
     localStorage.removeItem("base");
@@ -489,6 +505,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     if (cobroActivo) {
       localStorage.setItem("totalCobro", totalCobro.toString());
       localStorage.setItem("totalPrestamo", totalPrestamo.toString());
+      localStorage.setItem("utilidadCobro", utilidadCobro.toString());
       localStorage.setItem("gastos", gastos.toString());
       localStorage.setItem("otrosGastos", otrosGastos.toString());
       localStorage.setItem("base", base.toString());
@@ -509,6 +526,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     cobroActivo,
     totalCobro,
     totalPrestamo,
+    utilidadCobro,
     gastos,
     otrosGastos,
     base,
@@ -543,6 +561,8 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         totalPrestamo,
         sumaCobro,
         sumaPrestamo,
+        utilidadCobro,
+        sumaUtilidadCobro,
         resetearTotales,
         tarjetasCanceladas,
         tarjetasIngresadas,

@@ -254,6 +254,22 @@ WHERE TAR_CODIGO IN (SELECT TAR_CODIGO FROM temp_iten);
 
 -- Paso 4: Limpiar
 DROP TABLE temp_iten;
+________________________________________________
+-- 1. Crear columna UTILIDAD si no existe
+ALTER TABLE TARGETA ADD COLUMN UTILIDAD INTEGER;
+
+-- 2. Actualizar PRES como INTEGER redondeado
+UPDATE TARGETA 
+SET PRES = CAST(ROUND(CAST(TAR_VALOR AS REAL) / 1.20, 0) AS INTEGER)
+WHERE PRES IS NULL 
+   OR PRES = '' 
+   OR PRES = '1' 
+   OR CAST(PRES AS REAL) < 1000;
+
+-- 3. Actualizar UTILIDAD como INTEGER
+UPDATE TARGETA 
+SET UTILIDAD = CAST(TAR_VALOR AS INTEGER) - CAST(PRES AS INTEGER)
+WHERE PRES IS NOT NULL;
 
 ---------------------------------------------
 NUEVO CLIENTE CON TARJETA
@@ -289,4 +305,32 @@ LIMIT 1;
 DELETE FROM TARGETA WHERE CLI_CODIGO = '1010';
 DELETE FROM CLIENTES WHERE CLI_CODIGO = '1010';
 --------------------------------------------------
-// Obtener el historial de tarjetas de un cliente
+// Obtener utilidad
+
+Préstamo Efectivo: $250.000
+Valor Tarjeta: $300.000
+Utilidad Total: $50.000
+Cuota Esperada: $15.000
+Abono Real: $15.000 ✓ (pagó completo)
+──────────────────────────────────────────
+Utilidad del Abono = (15.000 / 300.000) × 50.000
+Utilidad del Abono = 0.05 × 50.000
+Utilidad del Abono = $2.500
+
+/// Esto podría ir en el menu organizar tarjetas
+
+-- 1. Crear columna UTILIDAD si no existe
+ALTER TABLE TARGETA ADD COLUMN UTILIDAD INTEGER;
+
+-- 2. Actualizar PRES como INTEGER redondeado
+UPDATE TARGETA 
+SET PRES = CAST(ROUND(CAST(TAR_VALOR AS REAL) / 1.20, 0) AS INTEGER)
+WHERE PRES IS NULL 
+   OR PRES = '' 
+   OR PRES = '1' 
+   OR CAST(PRES AS REAL) < 1000;
+
+-- 3. Actualizar UTILIDAD como INTEGER
+UPDATE TARGETA 
+SET UTILIDAD = CAST(TAR_VALOR AS INTEGER) - CAST(PRES AS INTEGER)
+WHERE PRES IS NOT NULL;

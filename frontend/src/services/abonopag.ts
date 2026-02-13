@@ -78,6 +78,8 @@ export async function crearClienteConTarjeta(
   tar_iten: string,
   tar_tiempo: string,
   tar_fp: string,
+  tar_pres: string,
+  tar_utilidad: string
 ): Promise<any> {
   const res = await fetch(`${API_URL}/abonopage/cliente/nuevo`, {
     method: "POST",
@@ -95,6 +97,8 @@ export async function crearClienteConTarjeta(
       tar_iten,
       tar_tiempo,
       tar_fp,
+      tar_pres,
+      tar_utilidad
     }),
   });
   const json = await res.json();

@@ -13,5 +13,6 @@ export interface TarjetaConSaldo extends Cliente {
   TIEMPO: string;
   FP: string;
   INT: string | null;
+  UTILIDAD: string | null;
 
 }

@@ -108,6 +108,8 @@ export const crearClienteNuevo = async (req: Request, res: Response) => {
     tar_iten,
     tar_tiempo,
     tar_fp,
+    tar_pres,
+    tar_utilidad,
   } = req.body;
   try {
     const data = await crearClienteConTarjetaSQL(
@@ -121,6 +123,8 @@ export const crearClienteNuevo = async (req: Request, res: Response) => {
       tar_iten,
       tar_tiempo,
       tar_fp,
+      tar_pres,
+      tar_utilidad,
     );
     res.json({ message: "Cliente creado exitosamente", data });
   } catch (error: any) {

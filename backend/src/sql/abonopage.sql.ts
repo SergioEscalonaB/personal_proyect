@@ -97,7 +97,7 @@ export const getTarjetaNavegacionSQL = (
   return prisma.$queryRaw<ClienteConTarjeta[]>`
     SELECT C.CLI_CODIGO, C.CLI_NOMBRE, C.CLI_CALLE, 
     C.COB_CODIGO, C.ESTADO, T.TAR_CODIGO, T.TAR_VALOR, 
-    T.TAR_CUOTA, T.TAR_FECHA, T.ITEN, T.ESTADO, T.TIEMPO, T.FP
+    T.TAR_CUOTA, T.TAR_FECHA, T.ITEN, T.ESTADO, T.TIEMPO, T.FP, T.PRES, T.UTILIDAD
     FROM CLIENTES C
     INNER JOIN TARGETA T
         ON C.CLI_CODIGO = T.CLI_CODIGO
@@ -183,6 +183,8 @@ export const crearClienteConTarjetaSQL = async (
   tar_iten: string,
   tar_tiempo: string,
   tar_fp: string,
+  tar_pres: string,
+  tar_utilidad: string,
 ) => {
   // Validar que el cliente no tenga una tarjeta activa en el mismo cobro
   const existe = await prisma.$queryRaw<
@@ -239,7 +241,7 @@ export const crearClienteConTarjetaSQL = async (
     `,
     // 3. Insertar tarjeta en la posición deseada
     prisma.$executeRaw`
-      INSERT INTO TARGETA (TAR_CODIGO, CLI_CODIGO, TAR_VALOR, TAR_CUOTA, TAR_FECHA, ITEN, ESTADO, TIEMPO, FP)
+      INSERT INTO TARGETA (TAR_CODIGO, CLI_CODIGO, TAR_VALOR, TAR_CUOTA, TAR_FECHA, ITEN, ESTADO, TIEMPO, FP, PRES, UTILIDAD)
       SELECT 
         ${cob_codigo} || (COALESCE(MAX(CAST(SUBSTR(TAR_CODIGO, LENGTH(${cob_codigo}) + 1) AS INTEGER)), 0) + 1),
         ${cli_codigo},
@@ -249,7 +251,9 @@ export const crearClienteConTarjetaSQL = async (
         ${tar_iten},
         'ACTIVA',
         ${tar_tiempo},
-        ${tar_fp}
+        ${tar_fp},
+        ${tar_pres},
+        ${tar_utilidad}
       FROM TARGETA 
       WHERE TAR_CODIGO LIKE ${cob_codigo} || '%'
     `,

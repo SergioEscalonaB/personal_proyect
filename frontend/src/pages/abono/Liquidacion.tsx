@@ -1,5 +1,4 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useState } from "react";
 import { useAbono } from "./AbonoContext";
 import { crearReporteCobro } from "../../services/abonopag";
 
@@ -27,10 +26,10 @@ function Liquidacion() {
     prestamoManual,
     setPrestamoManual,
     //Reporte
+    reporteGuardado,
+    setReporteGuardado,
   } = useAbono();
 
-  // Estado para controlar si el reporte ya fue guardado
-  const [reporteGuardado, setReporteGuardado] = useState(false);
   
   // Convertir a formato mostrado (dividir entre 1000)
   const formatearValor = (valor: number) => {

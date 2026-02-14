@@ -79,6 +79,8 @@ type AbonoContextType = {
   setCobroManual: (valor: number) => void;
   prestamoManual: number;
   setPrestamoManual: (valor: number) => void;
+  reporteGuardado: boolean;
+  setReporteGuardado: (valor: boolean) => void;
 };
 
 const AbonoContext = createContext<AbonoContextType | undefined>(undefined);
@@ -113,14 +115,14 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
       return stored ? JSON.parse(stored) : null;
     },
   );
-  
+
   // Ref para guardar el código del cobro anterior y detectar cambios reales
   const prevCobroCodigoRef = useRef<string | null>(null);
-  
+
   useEffect(() => {
     if (cobroSeleccionado) {
       const cobroActualCodigo = cobroSeleccionado.COB_CODIGO;
-      
+
       // Verificar si el cobro realmente cambió o es la carga inicial
       if (prevCobroCodigoRef.current === null) {
         // Carga inicial: usar el offset restaurado de localStorage
@@ -131,7 +133,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         // El cobro cambió: empezar desde 0
         cargarTarjeta(cobroActualCodigo, 0);
       }
-      
+
       prevCobroCodigoRef.current = cobroActualCodigo;
     }
   }, [cobroSeleccionado]);
@@ -423,7 +425,11 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     setEfectivo(0);
     setCobroManual(0);
     setPrestamoManual(0);
+    setReporteGuardado(false);
   };
+
+  // Estado para controlar si el reporte ya fue guardado
+  const [reporteGuardado, setReporteGuardado] = useState(false);
 
   // Estado para el registro de tarjetas ingresadas y canceladas en la liquidación
   const [tarjetasCanceladas, setTarjetasCanceladas] = useState<
@@ -586,6 +592,8 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         setCobroManual,
         prestamoManual,
         setPrestamoManual,
+        reporteGuardado,
+        setReporteGuardado,
       }}
     >
       {children}

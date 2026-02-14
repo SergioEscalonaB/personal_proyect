@@ -1,5 +1,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useState } from "react";
 import { useAbono } from "./AbonoContext";
+import { crearReporteCobro } from "../../services/abonopag";
 
 function Liquidacion() {
   const {
@@ -8,6 +10,7 @@ function Liquidacion() {
     tarjetasCanceladas,
     tarjetasIngresadas,
     cobroActivo,
+    cobroSeleccionado,
     utilidadCobro,
     gastos,
     setGastos,
@@ -23,8 +26,12 @@ function Liquidacion() {
     setCobroManual,
     prestamoManual,
     setPrestamoManual,
+    //Reporte
   } = useAbono();
 
+  // Estado para controlar si el reporte ya fue guardado
+  const [reporteGuardado, setReporteGuardado] = useState(false);
+  
   // Convertir a formato mostrado (dividir entre 1000)
   const formatearValor = (valor: number) => {
     return (valor / 1000).toFixed(0);
@@ -68,17 +75,44 @@ function Liquidacion() {
   // Obtener fecha de hoy
   const obtenerFechaHoy = () => {
     const hoy = new Date();
-    return hoy.toLocaleDateString("es-ES", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+    const dd = String(hoy.getDate()).padStart(2, "0");
+
+    // Array de nombres de meses
+    const meses = [
+      "ene",
+      "feb",
+      "mar",
+      "abr",
+      "may",
+      "jun",
+      "jul",
+      "ago",
+      "sep",
+      "oct",
+      "nov",
+      "dic",
+    ];
+    const mmm = meses[hoy.getMonth()];
+
+    const yy = String(hoy.getFullYear()).slice(-2);
+
+    return `${dd}-${mmm}-${yy}`;
   };
 
-  // Función para guardar reporte
+  // Funcion para guardar reporte
   const guardarReporte = () => {
-    // Aquí va la lógica para guardar el reporte
-    console.log("Guardando reporte...");
+    crearReporteCobro(
+      cobroSeleccionado?.COB_CODIGO || "",
+      obtenerFechaHoy(),
+      String(formatearValor(totalCobro + cobroManual)),
+      String(formatearValor(totalPrestamo + prestamoManual)),
+      String(formatearValor(utilidadCobro)),
+      String(formatearValor(gastos + otrosGastos)),
+      String(formatearValor(efectivo)),
+      String(formatearValor(base)),
+    );
+    alert("Reporte guardado");
+    setReporteGuardado(true);
   };
 
   return (
@@ -168,25 +202,30 @@ function Liquidacion() {
         </div>
         {/* COLUMNA LATERAL - REPORTE - 4 */}
         <div className="col-4 d-flex flex-column justify-content-center align-items-center position-absolute end-0">
-          <div className="border border-secondary bg-light p-3 rounded mb-3 text-center" style={{ height: "100%" }}>
+          <div
+            className="border border-secondary bg-light p-3 rounded mb-3 text-center"
+            style={{ height: "100%" }}
+          >
             <div className="fw-bold mb-2" style={{ fontSize: "1rem" }}>
               REPORTE
             </div>
-            <div className="text-danger fw-bold mb-2" style={{ fontSize: "0.9rem" }}>
-              No Guardado
+            <div
+              className={`fw-bold mb-2 ${reporteGuardado ? 'text-success' : 'text-danger'}`}
+              style={{ fontSize: "0.9rem" }}
+            >
+              {reporteGuardado ? "Guardado" : "No Guardado"}
             </div>
             <div className="text" style={{ fontSize: "0.85rem" }}>
               {obtenerFechaHoy()}
             </div>
             <button
-            className=" mt-2 btn btn-primary w-60"
-            onClick={guardarReporte}
-            disabled={!cobroActivo}
-          >
-            Guardar
-          </button>
+              className=" mt-2 btn btn-primary w-60"
+              onClick={guardarReporte}
+              disabled={!cobroActivo || reporteGuardado} // Modificar logica para sobreescriir reporte si ya fue guardado
+            >
+              Guardar
+            </button>
           </div>
-          
         </div>
       </div>
       {/* FILA 5 - BASE */}

@@ -16,25 +16,31 @@ import type { SaldoRestante } from "../../types/saldorestante";
 import type { TarjetaIngresada } from "../../types/tarjetaingresada";
 import type { TarjetaCancelada } from "../../types/tarjetacancelada";
 
+// ─── TIPO DEL CONTEXTO ────────────────────────────────────────────────────────
+
 type AbonoContextType = {
+  // Rutas
   rutas: Cobro[];
+
+  // Navegación
   cobroSeleccionado: Cobro | null;
   cliente: TarjetaConSaldo | null;
   offset: number;
   total: number;
-  descripcion: DescripcionTarjeta[];
-  saldoRestante: SaldoRestante | null;
-  todosClientes: any[];
-  tarjetasCanceladas: TarjetaCancelada[];
-  tarjetasIngresadas: TarjetaIngresada[];
-  registrarTarjetaCancelada: (nombre: string, saldoCancelado: number) => void;
-  registrarTarjetaIngresada: (nombre: string, prestamo: number) => void;
   setCobroSeleccionado: (c: Cobro) => void;
-  resetearListas: () => void;
   siguiente: () => void;
   anterior: () => void;
   primero: () => void;
   ultimo: () => void;
+
+  // Datos de la tarjeta
+  descripcion: DescripcionTarjeta[];
+  saldoRestante: SaldoRestante | null;
+
+  // Gestión de clientes
+  todosClientes: any[];
+  ConteoTarjetas?: () => void;
+  cargarTodosClientes: (cob_codigo: string) => void;
   crearNuevoCliente: (
     cli_codigo: string,
     cli_nombre: string,
@@ -49,55 +55,72 @@ type AbonoContextType = {
     tar_pres: string,
     tar_utilidad: string,
   ) => void;
-  ConteoTarjetas?: () => void;
-  cargarTodosClientes: (cob_codigo: string) => void;
   crearNuevaDescripcion: (
     des_abono: string,
     des_resta: string,
   ) => Promise<void>;
+
+  // Liquidación
   totalCobro: number;
   totalPrestamo: number;
   utilidadCobro: number;
+  gastos: number;
+  otrosGastos: number;
+  base: number;
+  descuento: number;
+  efectivo: number;
+  cobroManual: number;
+  prestamoManual: number;
+  reporteGuardado: boolean;
   sumaCobro: (monto: number) => void;
   sumaPrestamo: (monto: number) => void;
   sumaUtilidadCobro: (monto: number) => void;
   resetearTotales: () => void;
+  setGastos: (valor: number) => void;
+  setOtrosGastos: (valor: number) => void;
+  setBase: (valor: number) => void;
+  setDescuento: (valor: number) => void;
+  setEfectivo: (valor: number) => void;
+  setCobroManual: (valor: number) => void;
+  setPrestamoManual: (valor: number) => void;
+  setReporteGuardado: (valor: boolean) => void;
+
+  // Listas de tarjetas
+  tarjetasCanceladas: TarjetaCancelada[];
+  tarjetasIngresadas: TarjetaIngresada[];
+  registrarTarjetaCancelada: (nombre: string, saldoCancelado: number) => void;
+  registrarTarjetaIngresada: (nombre: string, prestamo: number) => void;
+  resetearListas: () => void;
+
+  // Control del cobro
   cobroActivo: boolean;
   iniciarCobro: () => void;
   finalizarCobro: () => void;
-  gastos: number;
-  setGastos: (valor: number) => void;
-  otrosGastos: number;
-  setOtrosGastos: (valor: number) => void;
-  base: number;
-  setBase: (valor: number) => void;
-  descuento: number;
-  setDescuento: (valor: number) => void;
-  efectivo: number;
-  setEfectivo: (valor: number) => void;
-  cobroManual: number;
-  setCobroManual: (valor: number) => void;
-  prestamoManual: number;
-  setPrestamoManual: (valor: number) => void;
-  reporteGuardado: boolean;
-  setReporteGuardado: (valor: boolean) => void;
 };
+
+// ─── CONTEXTO ─────────────────────────────────────────────────────────────────
 
 const AbonoContext = createContext<AbonoContextType | undefined>(undefined);
 
+// ─── PROVIDER ─────────────────────────────────────────────────────────────────
+
 export function AbonoProvider({ children }: { children: React.ReactNode }) {
-  // Obtener las rutas de cobro
+  // ── 1. RUTAS DE COBRO ──────────────────────────────────────────────────────
+
   const [rutas, setRutas] = useState<Cobro[]>([]);
   useEffect(() => {
     getRutas().then(setRutas);
   }, []);
 
-  // Estado para la navegacion de tarjetas (con persistencia) - debe ir antes del useEffect
+  // ── 2. NAVEGACIÓN DE TARJETAS ──────────────────────────────────────────────
+
   const [offset, setOffset] = useState(() => {
     const stored = localStorage.getItem("offset");
     return stored ? parseInt(stored, 10) : 0;
   });
+
   const [cliente, setCliente] = useState<TarjetaConSaldo | null>(null);
+
   const cargarTarjeta = async (codigo: string, nuevoOffset: number) => {
     const data = await getTarjetasconSaldo(codigo, nuevoOffset);
     if (data.length > 0) {
@@ -108,7 +131,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Cobro seleccionado y carga de tarjetas (con persistencia)
+  // Cobro seleccionado (con persistencia)
   const [cobroSeleccionado, setCobroSeleccionadoState] = useState<Cobro | null>(
     () => {
       const stored = localStorage.getItem("cobroSeleccionado");
@@ -116,14 +139,13 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     },
   );
 
-  // Ref para guardar el código del cobro anterior y detectar cambios reales
+  // Ref para detectar cambios reales de cobro vs. carga inicial
   const prevCobroCodigoRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (cobroSeleccionado) {
       const cobroActualCodigo = cobroSeleccionado.COB_CODIGO;
 
-      // Verificar si el cobro realmente cambió o es la carga inicial
       if (prevCobroCodigoRef.current === null) {
         // Carga inicial: usar el offset restaurado de localStorage
         const storedOffset = localStorage.getItem("offset");
@@ -138,7 +160,6 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     }
   }, [cobroSeleccionado]);
 
-  // Función para seleccionar un cobro y reiniciar el offset
   const setCobroSeleccionado = (c: Cobro) => {
     setOffset(0);
     setCobroSeleccionadoState(c);
@@ -147,7 +168,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("offset", "0");
   };
 
-  //Conteo de todos los clientes activos con saldo y tarjeta
+  // Conteo de todos los clientes activos con saldo y tarjeta
   const [total, setTotal] = useState(0);
   useEffect(() => {
     const ConteoTarjetas = async () => {
@@ -163,30 +184,26 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
 
   // Funciones de navegación
   const siguiente = () => {
-    if (cobroSeleccionado) {
+    if (cobroSeleccionado)
       cargarTarjeta(cobroSeleccionado.COB_CODIGO, offset + 1);
-    }
   };
 
   const anterior = () => {
-    if (offset > 0 && cobroSeleccionado) {
+    if (offset > 0 && cobroSeleccionado)
       cargarTarjeta(cobroSeleccionado.COB_CODIGO, offset - 1);
-    }
   };
 
   const primero = () => {
-    if (cobroSeleccionado) {
-      cargarTarjeta(cobroSeleccionado.COB_CODIGO, 0);
-    }
+    if (cobroSeleccionado) cargarTarjeta(cobroSeleccionado.COB_CODIGO, 0);
   };
 
   const ultimo = () => {
-    if (cobroSeleccionado) {
+    if (cobroSeleccionado)
       cargarTarjeta(cobroSeleccionado.COB_CODIGO, total - 1);
-    }
   };
 
-  // Mostrar descripcion de la tarjeta del cliente
+  // ── 3. DATOS DE LA TARJETA ─────────────────────────────────────────────────
+
   const [descripcion, setDescripcion] = useState<DescripcionTarjeta[]>([]);
   useEffect(() => {
     const cargarDescripcion = async () => {
@@ -200,7 +217,6 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     cargarDescripcion();
   }, [cliente]);
 
-  // Obtener saldo restante de la tarjeta
   const [saldoRestante, setSaldoRestante] = useState<SaldoRestante | null>(
     null,
   );
@@ -213,11 +229,23 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         setSaldoRestante(null);
       }
     };
-
     cargarSaldoRestante();
   }, [cliente]);
 
-  // Crear un nuevo cliente con su tarjeta y saldo inicial
+  // ── 4. GESTIÓN DE CLIENTES ─────────────────────────────────────────────────
+
+  const [todosClientes, setTodosClientes] = useState<any[]>([]);
+
+  const cargarTodosClientes = async (cob_codigo: string) => {
+    try {
+      const data = await getTodosClientes(cob_codigo);
+      setTodosClientes(data);
+    } catch (error) {
+      console.error("Error al cargar todos los clientes:", error);
+      setTodosClientes([]);
+    }
+  };
+
   const crearNuevoCliente = async (
     cli_codigo: string,
     cli_nombre: string,
@@ -276,19 +304,6 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  //Cargar clientes existentes cuando se marque el checkbox
-  const [todosClientes, setTodosClientes] = useState<any[]>([]);
-  const cargarTodosClientes = async (cob_codigo: string) => {
-    try {
-      const data = await getTodosClientes(cob_codigo);
-      setTodosClientes(data);
-    } catch (error) {
-      console.error("Error al cargar todos los clientes:", error);
-      setTodosClientes([]);
-    }
-  };
-
-  // Creando la descripcion de los abonos
   const crearNuevaDescripcion = async (
     des_abono: string,
     des_resta: string,
@@ -331,13 +346,13 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         des_resta,
       );
 
-      // Recargar la descripcion y el saldo restante
+      // Recargar descripcion, saldo restante y conteo
       const desc = await getDescripcionTarjeta(cliente.TAR_CODIGO);
       setDescripcion(desc);
-      // Recargar el saldo restante
+
       const saldo = await getSaldoRestante(cliente.TAR_CODIGO);
       setSaldoRestante(saldo);
-      // Recargar el conteo de los clientes activos con saldo y tarjeta
+
       if (cobroSeleccionado) {
         const totalTarjetas = await getTotalTarjetas(
           cobroSeleccionado.COB_CODIGO,
@@ -350,7 +365,8 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Estados para la liquidacion
+  // ── 5. LIQUIDACIÓN ─────────────────────────────────────────────────────────
+
   const [totalCobro, setTotalCobro] = useState<number>(() => {
     const stored = localStorage.getItem("totalCobro");
     return stored ? parseFloat(stored) : 0;
@@ -401,19 +417,14 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     return stored ? parseFloat(stored) : 0;
   });
 
-  const sumaCobro = (monto: number) => {
-    setTotalCobro((prev) => prev + monto);
-  };
+  const [reporteGuardado, setReporteGuardado] = useState(false);
 
-  const sumaPrestamo = (monto: number) => {
+  const sumaCobro = (monto: number) => setTotalCobro((prev) => prev + monto);
+  const sumaPrestamo = (monto: number) =>
     setTotalPrestamo((prev) => prev + monto);
-  };
-
-  const sumaUtilidadCobro = (monto: number) => {
+  const sumaUtilidadCobro = (monto: number) =>
     setUtilidadCobro((prev) => prev + monto);
-  };
 
-  // Función para resetear los totales (útil al cambiar de cobro)
   const resetearTotales = () => {
     setTotalCobro(0);
     setTotalPrestamo(0);
@@ -428,10 +439,8 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     setReporteGuardado(false);
   };
 
-  // Estado para controlar si el reporte ya fue guardado
-  const [reporteGuardado, setReporteGuardado] = useState(false);
+  // ── 6. LISTAS DE TARJETAS ──────────────────────────────────────────────────
 
-  // Estado para el registro de tarjetas ingresadas y canceladas en la liquidación
   const [tarjetasCanceladas, setTarjetasCanceladas] = useState<
     TarjetaCancelada[]
   >(() => {
@@ -446,7 +455,6 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     return stored ? JSON.parse(stored) : [];
   });
 
-  // Función para registrar tarjeta cancelada
   const registrarTarjetaCancelada = (
     nombre: string,
     saldoCancelado: number,
@@ -454,36 +462,30 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     setTarjetasCanceladas((prev) => [...prev, { nombre, saldoCancelado }]);
   };
 
-  // Función para registrar tarjeta ingresada
   const registrarTarjetaIngresada = (nombre: string, prestamo: number) => {
     setTarjetasIngresadas((prev) => [...prev, { nombre, prestamo }]);
   };
 
-  // Función para resetear listas (al cambiar de cobro)
   const resetearListas = () => {
     setTarjetasCanceladas([]);
     setTarjetasIngresadas([]);
   };
 
-  // Estado para controlar si el cobro esta activo
+  // ── 7. CONTROL DEL COBRO ───────────────────────────────────────────────────
+
   const [cobroActivo, setCobroActivo] = useState<boolean>(() => {
-    // Recuperar del localStorage al cargar el componente
     const stored = localStorage.getItem("cobroActivo");
     return stored === "true";
   });
 
-  // Guardar en localStorage cada vez que cambie el estado
+  // Persistir cobroActivo en localStorage
   useEffect(() => {
     localStorage.setItem("cobroActivo", cobroActivo.toString());
   }, [cobroActivo]);
 
-  // Función para iniciar el cobro
-  const iniciarCobro = () => {
-    setCobroActivo(true);
-  };
+  const iniciarCobro = () => setCobroActivo(true);
 
   const finalizarCobro = () => {
-    //Resetear todo los totales y listas
     resetearTotales();
     resetearListas();
     setCobroActivo(false);
@@ -506,7 +508,8 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("offset");
   };
 
-  // Persistir totales y listas en localStorage
+  // ── 8. PERSISTENCIA EN localStorage ───────────────────────────────────────
+
   useEffect(() => {
     if (cobroActivo) {
       localStorage.setItem("totalCobro", totalCobro.toString());
@@ -544,10 +547,14 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     tarjetasIngresadas,
   ]);
 
+  // ── 9. RETURN DEL PROVIDER ─────────────────────────────────────────────────
+
   return (
     <AbonoContext.Provider
       value={{
+        // Rutas
         rutas,
+        // Navegación
         cobroSeleccionado,
         cliente,
         offset,
@@ -557,49 +564,56 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         anterior,
         primero,
         ultimo,
+        // Datos de la tarjeta
         descripcion,
         saldoRestante,
-        crearNuevoCliente,
+        // Gestión de clientes
         todosClientes,
         cargarTodosClientes,
+        crearNuevoCliente,
         crearNuevaDescripcion,
+        // Liquidación
         totalCobro,
         totalPrestamo,
+        utilidadCobro,
+        gastos,
+        otrosGastos,
+        base,
+        descuento,
+        efectivo,
+        cobroManual,
+        prestamoManual,
+        reporteGuardado,
         sumaCobro,
         sumaPrestamo,
-        utilidadCobro,
         sumaUtilidadCobro,
         resetearTotales,
+        setGastos,
+        setOtrosGastos,
+        setBase,
+        setDescuento,
+        setEfectivo,
+        setCobroManual,
+        setPrestamoManual,
+        setReporteGuardado,
+        // Listas de tarjetas
         tarjetasCanceladas,
         tarjetasIngresadas,
         registrarTarjetaCancelada,
         registrarTarjetaIngresada,
         resetearListas,
+        // Control del cobro
         cobroActivo,
         iniciarCobro,
         finalizarCobro,
-        gastos,
-        setGastos,
-        otrosGastos,
-        setOtrosGastos,
-        base,
-        setBase,
-        descuento,
-        setDescuento,
-        efectivo,
-        setEfectivo,
-        cobroManual,
-        setCobroManual,
-        prestamoManual,
-        setPrestamoManual,
-        reporteGuardado,
-        setReporteGuardado,
       }}
     >
       {children}
     </AbonoContext.Provider>
   );
 }
+
+// ─── HOOK ──────────────────────────────────────────────────────────────────────
 
 export const useAbono = () => {
   const ctx = useContext(AbonoContext);

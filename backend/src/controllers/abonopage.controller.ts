@@ -9,6 +9,7 @@ import {
   crearClienteConTarjetaSQL,
   crearDescripcionAbonoSQL,
   crearReporteCobroSQL,
+  getBuscarTarjetaSQL,
 } from "../sql/abonopage.sql";
 
 // Obtener todos los cobros
@@ -178,3 +179,16 @@ export const crearReporteCobro = async (req: Request, res: Response) => {
   }
 };
 
+// Lista de tarjetas por nombre
+export const buscarTarjeta = async (req: Request, res: Response) => {
+  const { cobroCodigo } = req.params;
+  try {
+    const cobroCodigoValue = Array.isArray(req.params.cobroCodigo)
+      ? req.params.cobroCodigo[0]
+      : req.params.cobroCodigo;
+    const data = await getBuscarTarjetaSQL(cobroCodigoValue);
+    res.json({ data });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};

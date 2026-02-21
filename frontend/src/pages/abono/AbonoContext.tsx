@@ -8,6 +8,7 @@ import {
   crearClienteConTarjeta,
   getTodosClientes,
   crearDescripcionAbono,
+  buscarClientesPorNombre,
 } from "../../services/abonopag";
 import type { Cobro } from "../../types/cobro";
 import type { TarjetaConSaldo } from "../../types/tarjetaconsaldo";
@@ -32,6 +33,7 @@ type AbonoContextType = {
   anterior: () => void;
   primero: () => void;
   ultimo: () => void;
+  busqueda: (offset: number) => void;
 
   // Datos de la tarjeta
   descripcion: DescripcionTarjeta[];
@@ -96,6 +98,10 @@ type AbonoContextType = {
   cobroActivo: boolean;
   iniciarCobro: () => void;
   finalizarCobro: () => void;
+
+  // Listas de clientes
+  listaClientes: any[];
+  buscarClientes: () => void;
 };
 
 // ─── CONTEXTO ─────────────────────────────────────────────────────────────────
@@ -200,6 +206,10 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
   const ultimo = () => {
     if (cobroSeleccionado)
       cargarTarjeta(cobroSeleccionado.COB_CODIGO, total - 1);
+  };
+
+  const busqueda = (nuevoOffset: number) => {
+    if (cobroSeleccionado) cargarTarjeta(cobroSeleccionado.COB_CODIGO, nuevoOffset);
   };
 
   // ── 3. DATOS DE LA TARJETA ─────────────────────────────────────────────────
@@ -470,6 +480,22 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     setTarjetasCanceladas([]);
     setTarjetasIngresadas([]);
   };
+  // ── 6. LISTAS DE CLIENTES ──────────────────────────────────────────────────
+  const [listaClientes, setListaClientes] = useState<any[]>([]);
+  
+  const buscarClientes = async () => {
+    if (!cobroSeleccionado) return;
+    try {
+      const data = await buscarClientesPorNombre(cobroSeleccionado.COB_CODIGO);
+      setListaClientes(data);
+    } catch (error) {
+      console.error("Error al buscar clientes:", error);
+    }
+  };
+
+  useEffect(() => {
+    buscarClientes();
+  }, [cobroSeleccionado]);
 
   // ── 7. CONTROL DEL COBRO ───────────────────────────────────────────────────
 
@@ -564,6 +590,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         anterior,
         primero,
         ultimo,
+        busqueda,
         // Datos de la tarjeta
         descripcion,
         saldoRestante,
@@ -606,6 +633,9 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         cobroActivo,
         iniciarCobro,
         finalizarCobro,
+        // Listas de clientes
+        listaClientes,
+        buscarClientes,
       }}
     >
       {children}

@@ -374,5 +374,39 @@ export const crearReporteCobroSQL = async (
   }
 };
 
-// Reorganizar cobro: solo para casos donde quedaron tarjetas sin marcar
-// (normalmente ya está todo organizado por crearDescripcionAbonoSQL)
+// OBTENIENDO LAS TARJETAS QUE NO ESTAN EN 0
+// ESTAN SON LAS QUE SE MUESTRAN EN EL BUSCADOR
+// ESTO PARA BUSCAR AL CLIENTE
+export const getBuscarTarjetaSQL = (cobroCodigo: string) => {
+  return prisma.$queryRaw<any[]>`
+        SELECT C.CLI_NOMBRE, T.ITEN
+FROM CLIENTES C
+INNER JOIN TARGETA T
+    ON C.CLI_CODIGO = T.CLI_CODIGO
+
+LEFT JOIN (
+    SELECT TAR_CODIGO, DES_RESTA
+    FROM (
+        SELECT 
+            TAR_CODIGO,
+            DES_RESTA,
+            ROW_NUMBER() OVER (PARTITION BY TAR_CODIGO ORDER BY DES_FECHA DESC) AS rn,
+            MAX(CASE WHEN DES_RESTA = 0 THEN 1 ELSE 0 END)
+                OVER (PARTITION BY TAR_CODIGO) AS tuvo_cero
+        FROM DESCRIPCION
+    ) X
+    WHERE rn = 1
+      AND tuvo_cero = 0
+) D ON T.TAR_CODIGO = D.TAR_CODIGO
+
+WHERE T.ESTADO = 'ACTIVA'
+  AND C.COB_CODIGO = ${cobroCodigo}
+  -- esta línea permite tarjetas nuevas SIN descripción
+  AND (D.TAR_CODIGO IS NOT NULL OR NOT EXISTS (
+        SELECT 1 
+        FROM DESCRIPCION D2 
+        WHERE D2.TAR_CODIGO = T.TAR_CODIGO
+      ))
+ORDER BY C.CLI_NOMBRE
+    `;
+};

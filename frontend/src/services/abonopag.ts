@@ -23,7 +23,7 @@ export async function getTotalTarjetas(cob_codigo: string): Promise<number> {
   return json.data[0].total;
 }
 
-// Cargar tarjetas para un cobro específico con paginación
+// Cargar tarjetas para un cobro específico con navegación por offset
 export async function getTarjetasconSaldo(
   cob_codigo: string,
   offset: number,
@@ -180,4 +180,17 @@ export async function crearReporteCobro(
   if (!res.ok) {
     throw new Error(json.error || "ERROR_DESCONOCIDO");
   }
+}
+
+// Lista de las clientes del cobro para buscar por nombre
+export async function buscarClientesPorNombre(
+  cob_codigo: string): Promise<any[]> {
+  const res = await fetch(
+    `${API_URL}/abonopage/${cob_codigo}/tarjeta/lista`,
+  );
+  if (!res.ok) {
+    throw new Error(`Error obteniendo la lista de clientes: ${res.statusText}`);
+  }
+  const json = await res.json();
+  return json.data;
 }

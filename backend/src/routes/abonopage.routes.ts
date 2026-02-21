@@ -9,6 +9,7 @@ import {
   crearClienteNuevo,
   crearDescripcionAbono,
   crearReporteCobro,
+  buscarTarjeta,
 } from "../controllers/abonopage.controller";
 
 const router = express.Router();
@@ -39,5 +40,8 @@ router.post("/descripcion/crear", crearDescripcionAbono);
 
 // Crear el nuevo reporte del cobro al finalizar
 router.post("/reporte/crear", crearReporteCobro);
+
+// Lista de tarjetas por nombre
+router.get("/:cobroCodigo/tarjeta/lista", buscarTarjeta);
 
 export default router;

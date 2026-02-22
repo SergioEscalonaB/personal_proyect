@@ -3,6 +3,7 @@ import express from "express";
 import cobroRoutes from "./routes/cobro.routes";
 import clienteRoutes from "./routes/cliente.routes";
 import abonoPageRoutes from "./routes/abonopage.routes";
+import organizarRoutes from "./routes/organizar.routes";
 import cors from "cors";
 
 // Crear la aplicación Express
@@ -36,6 +37,9 @@ app.use("/clientes", clienteRoutes);
 
 // Usar la ruta de abonopage
 app.use("/abonopage", abonoPageRoutes);
+
+//usar la ruta de organizar
+app.use("/organizar", organizarRoutes);
 
 // Exportar la aplicación
 export default app;

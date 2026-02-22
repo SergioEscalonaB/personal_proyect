@@ -300,6 +300,8 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
         const nuevaPosicion = itenNuevo <= itenActual ? offset : offset + 1;
 
         cargarTarjeta(cobroSeleccionado.COB_CODIGO, nuevaPosicion);
+        //Se agrega un nuevo cliente, por lo tanto 
+        await buscarClientes(); // Actualizar lista de clientes para el buscador
       }
     } catch (error: any) {
       const msg = error?.message ?? "";
@@ -368,6 +370,10 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
           cobroSeleccionado.COB_CODIGO,
         );
         setTotal(totalTarjetas);
+        //Si el saldo es 0, se asume que la tarjeta se canceló y se actualiza la lista de clientes para el buscador
+        if (parseFloat(des_resta) === 0) {
+          await buscarClientes(); // Actualizar lista de clientes para el buscador
+        }
       }
     } catch (error) {
       console.error("Error al crear la descripción del abono:", error);
@@ -480,7 +486,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     setTarjetasCanceladas([]);
     setTarjetasIngresadas([]);
   };
-  // ── 6. LISTAS DE CLIENTES ──────────────────────────────────────────────────
+  // ── 7. LISTAS DE CLIENTES ──────────────────────────────────────────────────
   const [listaClientes, setListaClientes] = useState<any[]>([]);
   
   const buscarClientes = async () => {
@@ -497,7 +503,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     buscarClientes();
   }, [cobroSeleccionado]);
 
-  // ── 7. CONTROL DEL COBRO ───────────────────────────────────────────────────
+  // ── 8. CONTROL DEL COBRO ───────────────────────────────────────────────────
 
   const [cobroActivo, setCobroActivo] = useState<boolean>(() => {
     const stored = localStorage.getItem("cobroActivo");
@@ -534,7 +540,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("offset");
   };
 
-  // ── 8. PERSISTENCIA EN localStorage ───────────────────────────────────────
+  // ── 9. PERSISTENCIA EN localStorage ───────────────────────────────────────
 
   useEffect(() => {
     if (cobroActivo) {
@@ -573,7 +579,7 @@ export function AbonoProvider({ children }: { children: React.ReactNode }) {
     tarjetasIngresadas,
   ]);
 
-  // ── 9. RETURN DEL PROVIDER ─────────────────────────────────────────────────
+  // ── 10. RETURN DEL PROVIDER ─────────────────────────────────────────────────
 
   return (
     <AbonoContext.Provider

@@ -2,13 +2,16 @@ import { useState } from "react";
 import { useAbono } from "./AbonoContext";
 
 function Buscar() {
+    // Importamos el contexto de Abono para acceder a la lista de clientes y la función de búsqueda
   const { listaClientes, busqueda } = useAbono();
   const [filtro, setFiltro] = useState("");
 
+  // Filtramos la lista de clientes según el texto ingresado en el filtro
   const clientesFiltrados = listaClientes.filter((c) =>
     c.CLI_NOMBRE?.toLowerCase().includes(filtro.toLowerCase()),
   );
 
+  // Función para seleccionar un cliente de la lista filtrada
   const seleccionarCliente = (iten: string) => {
     const offset = parseInt(iten) - 1;
     busqueda(offset);
